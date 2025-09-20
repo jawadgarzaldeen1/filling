@@ -1,0 +1,52 @@
+{
+    "manifest_version": 3,
+    "name": "Social Filler Pro",
+    "version": "6.0",
+    "description": "Advanced social media field filler with dynamic configuration",
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "content_scripts": [{
+        "matches": ["<all_urls>"],
+        "exclude_matches": [
+            "https://asana.com/*",
+            "http://asana.com/*",
+            "https://*.asana.com/*",
+            "http://*.asana.com/*",
+            "http://*.asana.com/*",
+            "https://suite.ewscrm.com/*",
+            "http://suite.ewscrm.com/*",
+            "https://*.suite.ewscrm.com/*",
+            "http://*.suite.ewscrm.com/*",
+            "http://*.suite.ewscrm.com/*",
+            "https://www.photopea.com/"
+        ],
+        "js": ["content.js"],
+        "run_at": "document_end"
+    },
+      {
+    "matches": [
+      "https://www.allstatesusadirectory.com/submit.php",
+      "https://www.hitwebdirectory.com/submit.php"
+    ],
+    "js": ["inject-category-filter.js"],
+    "run_at": "document_idle"
+    }],
+    "permissions": [
+        "storage",
+        "activeTab",
+        "tabs",
+        "scripting"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "web_accessible_resources": [{
+        "resources": ["test.js"],
+        "matches": ["<all_urls>"]
+    }]
+}
