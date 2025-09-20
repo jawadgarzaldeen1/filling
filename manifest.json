@@ -14,15 +14,13 @@
             "http://asana.com/*",
             "https://*.asana.com/*",
             "http://*.asana.com/*",
-            "http://*.asana.com/*",
             "https://suite.ewscrm.com/*",
             "http://suite.ewscrm.com/*",
             "https://*.suite.ewscrm.com/*",
             "http://*.suite.ewscrm.com/*",
-            "http://*.suite.ewscrm.com/*",
             "https://www.photopea.com/"
         ],
-        "js": ["content.js"],
+        "js": ["content-core.js", "content-universal.js", "content-radio.js"],
         "run_at": "document_end"
     },
       {
@@ -45,8 +43,4 @@
     "action": {
         "default_popup": "popup.html"
     },
-    "web_accessible_resources": [{
-        "resources": ["test.js"],
-        "matches": ["<all_urls>"]
-    }]
 }

@@ -96,46 +96,56 @@ chrome.runtime.onInstalled.addListener(async () => {
         }
     } catch (error) {
         log('Error initializing services:', error);
+        // Fallback: set default services if there's an error
+        try {
+            await chrome.storage.sync.set({ services: defaultServices });
+            log('Fallback: Default services set due to error');
+        } catch (fallbackError) {
+            log('Critical error: Could not set default services:', fallbackError);
+        }
     }
 });
 
-// Simplified message handling with a single listener
+// Optimized message handling with better error handling
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    log('Message received:', message);
+    log('Message received:', message.type);
+
+    const handleAsyncResponse = async (handler) => {
+        try {
+            const result = await handler();
+            sendResponse(result);
+        } catch (error) {
+            log('Error in message handler:', error);
+            sendResponse({ success: false, error: error.message });
+        }
+    };
 
     if (message.type === "GET_SERVICES") {
-        chrome.storage.sync.get('services', (result) => {
-             if (chrome.runtime.lastError) {
-                 log('Error getting services:', chrome.runtime.lastError);
-                 sendResponse({ services: defaultServices }); // Send defaults on error
-             } else {
-                // If services are undefined/null in storage, return defaults
-                sendResponse({ services: result.services || defaultServices });
-             }
+        handleAsyncResponse(async () => {
+            const result = await chrome.storage.sync.get('services');
+            return { services: result.services || defaultServices };
         });
         return true; // Keeps the sendResponse function alive for async response
     }
-    // Handler to reset services to their default values
-    else if (message.type === "RESET_SERVICES_TO_DEFAULT") {
-        chrome.storage.sync.set({ services: defaultServices , fillPassword: "" }, () => {
-             if (chrome.runtime.lastError) {
-                 log('Error resetting services:', chrome.runtime.lastError);
-                 sendResponse({ success: false, error: chrome.runtime.lastError.message });
-             } else {
-                log('Services reset to default');
-                sendResponse({ success: true });
-                // Notify content scripts that services changed
-                chrome.tabs.query({}, tabs => {
-                    tabs.forEach(tab => {
-                        if (tab.id) {
-                             chrome.tabs.sendMessage(tab.id, {
-                                type: 'SERVICES_UPDATED',
-                                message: 'Services configuration reset to default'
-                            }).catch(err => log(`Failed to send SERVICES_UPDATED to tab ${tab.id}:`, err));
-                        }
-                    });
-                });
-            }
+    
+    if (message.type === "RESET_SERVICES_TO_DEFAULT") {
+        handleAsyncResponse(async () => {
+            await chrome.storage.sync.set({ services: defaultServices, fillPassword: "" });
+            log('Services reset to default');
+            
+            // Notify content scripts that services changed
+            const tabs = await chrome.tabs.query({});
+            const notifications = tabs.map(tab => {
+                if (tab.id) {
+                    return chrome.tabs.sendMessage(tab.id, {
+                        type: 'SERVICES_UPDATED',
+                        message: 'Services configuration reset to default'
+                    }).catch(err => log(`Failed to send SERVICES_UPDATED to tab ${tab.id}:`, err));
+                }
+            });
+            await Promise.allSettled(notifications);
+            
+            return { success: true };
         });
         return true; // Keep connection open for async response
     }
@@ -159,21 +169,25 @@ chrome.runtime.onSuspend.addListener(() => {
     });
 });
 
-chrome.storage.onChanged.addListener((changes, area) => {
-    log(`Storage changed (${area}):`, changes);
+chrome.storage.onChanged.addListener(async (changes, area) => {
+    log(`Storage changed (${area}):`, Object.keys(changes));
     
     // Notify tabs when services are updated
     if (area === 'sync' && changes.services) {
-        chrome.tabs.query({}, tabs => {
-            tabs.forEach(tab => {
-                 if (tab.id) { // Ensure tab.id exists
-                    chrome.tabs.sendMessage(tab.id, {
+        try {
+            const tabs = await chrome.tabs.query({});
+            const notifications = tabs.map(tab => {
+                if (tab.id) {
+                    return chrome.tabs.sendMessage(tab.id, {
                         type: 'SERVICES_UPDATED',
                         message: 'Services configuration updated'
                     }).catch(err => log(`Failed to send SERVICES_UPDATED to tab ${tab.id} on change:`, err));
-                 }
+                }
             });
-        });
+            await Promise.allSettled(notifications);
+        } catch (error) {
+            log('Error notifying tabs of services update:', error);
+        }
     }
 });
 
