@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Extension Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .test-section {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Social Filler Pro Extension Test Page</h1>
+        <p>This page is designed to test the Social Filler Pro extension functionality.</p>
+        <div id="extensionStatus" class="status info">
+            Checking extension status...
+        </div>
+    </div>
+
+    <!-- Social Media Fields Test -->
+    <div class="container">
+        <div class="test-section">
+            <h3>📱 Social Media Fields Test</h3>
+            <div class="form-group">
+                <label for="facebook">Facebook URL:</label>
+                <input type="url" id="facebook" name="facebook" placeholder="https://facebook.com/yourpage">
+            </div>
+            <div class="form-group">
+                <label for="instagram">Instagram URL:</label>
+                <input type="url" id="instagram" name="instagram" placeholder="https://instagram.com/yourpage">
+            </div>
+            <div class="form-group">
+                <label for="twitter">Twitter URL:</label>
+                <input type="url" id="twitter" name="twitter" placeholder="https://twitter.com/yourpage">
+            </div>
+            <div class="form-group">
+                <label for="youtube">YouTube URL:</label>
+                <input type="url" id="youtube" name="youtube" placeholder="https://youtube.com/yourchannel">
+            </div>
+            <div class="form-group">
+                <label for="website">Website URL:</label>
+                <input type="url" id="website" name="website" placeholder="https://yourwebsite.com">
+            </div>
+        </div>
+    </div>
+
+    <!-- Universal Form Fields Test -->
+    <div class="container">
+        <div class="test-section">
+            <h3>📝 Universal Form Fields Test</h3>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567">
+            </div>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Your Name">
+            </div>
+            <div class="form-group">
+                <label for="company">Company:</label>
+                <input type="text" id="company" name="company" placeholder="Your Company">
+            </div>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" placeholder="123 Main St">
+            </div>
+            <div class="form-group">
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city" placeholder="Your City">
+            </div>
+            <div class="form-group">
+                <label for="state">State:</label>
+                <input type="text" id="state" name="state" placeholder="Your State">
+            </div>
+            <div class="form-group">
+                <label for="zip">ZIP Code:</label>
+                <input type="text" id="zip" name="zip" placeholder="12345">
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Selection Test -->
+    <div class="container">
+        <div class="test-section">
+            <h3>📂 Category Selection Test</h3>
+            <div class="form-group">
+                <label for="category">Category:</label>
+                <select id="category" name="category">
+                    <option value="">Select a category...</option>
+                    <option value="1">Household - Domestic Help</option>
+                    <option value="2">Computer</option>
+                    <option value="3">Health Beauty Fitness</option>
+                    <option value="4">Legal Services</option>
+                    <option value="5">Real Estate Services</option>
+                    <option value="6">Travel Services</option>
+                    <option value="7">Financial Services</option>
+                    <option value="8">Event Services</option>
+                    <option value="9">Repair</option>
+                    <option value="10">Writing - Editing - Translating</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Fields Test -->
+    <div class="container">
+        <div class="test-section">
+            <h3>📍 Location Fields Test</h3>
+            <div class="form-group">
+                <label for="country">Country:</label>
+                <select id="country" name="country">
+                    <option value="">Select country...</option>
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="UK">United Kingdom</option>
+                    <option value="AU">Australia</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="region">State/Region:</label>
+                <input type="text" id="region" name="region" placeholder="Your State/Region">
+            </div>
+            <div class="form-group">
+                <label for="city_location">City:</label>
+                <input type="text" id="city_location" name="city_location" placeholder="Your City">
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Field Test -->
+    <div class="container">
+        <div class="test-section">
+            <h3>🔒 Password Field Test</h3>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" placeholder="Enter password">
+            </div>
+        </div>
+    </div>
+
+    <!-- Radio Button Test -->
+    <div class="container">
+        <div class="test-section">
+            <h3>🔘 Radio Button Test</h3>
+            <div class="form-group">
+                <label>Do you agree to the terms?</label>
+                <input type="radio" id="agree_yes" name="agree" value="yes">
+                <label for="agree_yes">Yes</label>
+                <input type="radio" id="agree_no" name="agree" value="no">
+                <label for="agree_no">No</label>
+            </div>
+            <div class="form-group">
+                <label>Do you accept the terms?</label>
+                <input type="radio" id="accept_yes" name="accept" value="yes">
+                <label for="accept_yes">Accept</label>
+                <input type="radio" id="accept_no" name="accept" value="no">
+                <label for="accept_no">Decline</label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if extension is working
+        function checkExtensionStatus() {
+            const statusDiv = document.getElementById('extensionStatus');
+            
+            // Check if content scripts are loaded
+            if (window.contentScript) {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Extension is working! Content scripts are loaded.';
+            } else {
+                statusDiv.className = 'status info';
+                statusDiv.textContent = '⏳ Extension content scripts are loading...';
+                
+                // Check again after a delay
+                setTimeout(checkExtensionStatus, 1000);
+            }
+        }
+
+        // Initialize status check
+        document.addEventListener('DOMContentLoaded', () => {
+            checkExtensionStatus();
+        });
+
+        // Add some visual feedback when fields are filled
+        document.addEventListener('input', (e) => {
+            if (e.target.value) {
+                e.target.style.backgroundColor = '#E8F5E8';
+                e.target.style.borderColor = '#4CAF50';
+            } else {
+                e.target.style.backgroundColor = '';
+                e.target.style.borderColor = '';
+            }
+        });
+
+        document.addEventListener('change', (e) => {
+            if (e.target.value) {
+                e.target.style.backgroundColor = '#E8F5E8';
+                e.target.style.borderColor = '#4CAF50';
+            } else {
+                e.target.style.backgroundColor = '';
+                e.target.style.borderColor = '';
+            }
+        });
+    </script>
+</body>
+</html>
+

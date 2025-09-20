@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Filler Pro - Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .settings-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .settings-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .settings-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .settings-content {
+            padding: 30px;
+        }
+
+        .settings-section {
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .section-header:hover {
+            background: #e9ecef;
+        }
+
+        .section-header h3 {
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .section-toggle {
+            font-size: 18px;
+            color: #666;
+            transition: transform 0.2s;
+        }
+
+        .section-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4CAF50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info h4 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .setting-info p {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .color-picker {
+            width: 40px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .range-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .export-import-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .file-input-label:hover {
+            background: #5a6268;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .settings-container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            
+            .settings-content {
+                padding: 20px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-header">
+            <button class="back-button" onclick="goBack()">← Back</button>
+            <h1>⚙️ Extension Settings</h1>
+            <p>Configure your Social Filler Pro extension</p>
+        </div>
+
+        <div class="settings-content">
+            <!-- Status Message -->
+            <div id="statusMessage" class="status-message"></div>
+
+            <!-- General Settings -->
+            <div class="settings-section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>🔧 General Settings</h3>
+                    <span class="section-toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Auto-fill on Page Load</h4>
+                            <p>Automatically fill forms when pages load</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoFillOnLoad" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Show Visual Feedback</h4>
+                            <p>Highlight filled fields with green background</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showVisualFeedback" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Debug Mode</h4>
+                            <p>Enable detailed console logging for troubleshooting</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="debugMode">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fillDelay">Fill Delay (milliseconds)</label>
+                        <input type="range" id="fillDelay" min="0" max="2000" value="500" class="range-slider">
+                        <div class="help-text">Delay before filling forms to ensure page is ready</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media Settings -->
+            <div class="settings-section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>📱 Social Media Settings</h3>
+                    <span class="section-toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Auto-normalize URLs</h4>
+                            <p>Automatically add https:// to URLs without protocol</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoNormalizeUrls" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Validate URLs</h4>
+                            <p>Check if URLs are valid before saving</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="validateUrls" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="defaultSocialPlatforms">Default Social Platforms</label>
+                        <textarea id="defaultSocialPlatforms" rows="4" placeholder="facebook, instagram, twitter, youtube, linkedin"></textarea>
+                        <div class="help-text">Comma-separated list of default social media platforms</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Duplicate Prevention Settings -->
+            <div class="settings-section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>🚫 Duplicate Prevention</h3>
+                    <span class="section-toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Strict Mode</h4>
+                            <p>Prevent duplicates completely (vs. just warn)</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="strictMode" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Case Sensitive</h4>
+                            <p>Consider case when checking for duplicates</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="caseSensitive">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="similarityThreshold">Similarity Threshold</label>
+                        <input type="range" id="similarityThreshold" min="0" max="1" step="0.1" value="0.8" class="range-slider">
+                        <div class="help-text">Threshold for detecting similar entries (0.0 = exact match, 1.0 = any similarity)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Auto-fill Settings -->
+            <div class="settings-section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>✨ Description Auto-fill</h3>
+                    <span class="section-toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Auto-generate Descriptions</h4>
+                            <p>Automatically generate descriptions when fields change</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoGenerateDescriptions" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Overwrite User Changes</h4>
+                            <p>Allow auto-generation to overwrite user-made changes</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="overwriteUserChanges">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="defaultTemplate">Default Template</label>
+                        <select id="defaultTemplate">
+                            <option value="auto">Auto-detect</option>
+                            <option value="business">Business</option>
+                            <option value="service">Service</option>
+                            <option value="cleaning">Cleaning</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descriptionMinLength">Minimum Description Length</label>
+                        <input type="number" id="descriptionMinLength" min="10" max="500" value="20">
+                        <div class="help-text">Minimum length for auto-generated descriptions</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google Sheets Import Settings -->
+            <div class="settings-section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>📊 Google Sheets Import</h3>
+                    <span class="section-toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Auto-parse on Import</h4>
+                            <p>Automatically parse data when importing from Google Sheets</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoParseOnImport" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Show Import Warnings</h4>
+                            <p>Display warnings for potential data issues</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showImportWarnings" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="importTimeout">Import Timeout (seconds)</label>
+                        <input type="number" id="importTimeout" min="5" max="60" value="30">
+                        <div class="help-text">Maximum time to wait for import operations</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Management -->
+            <div class="settings-section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>💾 Data Management</h3>
+                    <span class="section-toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="export-import-section">
+                        <h4>Export & Import</h4>
+                        <p>Backup and restore your extension data</p>
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="exportData()">📤 Export Data</button>
+                            <label for="importFile" class="file-input-label">📥 Import Data</label>
+                            <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="socialLinksCount">0</div>
+                            <div class="stat-label">Social Links</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="universalFieldsCount">0</div>
+                            <div class="stat-label">Universal Fields</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="servicesCount">0</div>
+                            <div class="stat-label">Services</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="storageUsed">0 KB</div>
+                            <div class="stat-label">Storage Used</div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-warning" onclick="cleanDuplicates()">🧹 Clean Duplicates</button>
+                        <button class="btn btn-danger" onclick="resetAllData()">🗑️ Reset All Data</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Settings -->
+            <div class="settings-section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3>🔬 Advanced Settings</h3>
+                    <span class="section-toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="logLevel">Log Level</label>
+                        <select id="logLevel">
+                            <option value="error">Error Only</option>
+                            <option value="warn">Warnings & Errors</option>
+                            <option value="info" selected>Info, Warnings & Errors</option>
+                            <option value="debug">All Logs (Debug)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cacheSize">Cache Size Limit</label>
+                        <input type="number" id="cacheSize" min="5" max="100" value="10">
+                        <div class="help-text">Maximum number of items to cache for performance</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="updateInterval">Update Interval (seconds)</label>
+                        <input type="number" id="updateInterval" min="1" max="60" value="5">
+                        <div class="help-text">How often to check for updates and sync data</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Settings -->
+            <div class="button-group" style="margin-top: 30px;">
+                <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+                <button class="btn btn-secondary" onclick="resetSettings()">🔄 Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="settings.js"></script>
+</body>
+</html>

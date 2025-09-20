@@ -1,46 +1,99 @@
 {
     "manifest_version": 3,
     "name": "Social Filler Pro",
-    "version": "6.0",
-    "description": "Advanced social media field filler with dynamic configuration",
+    "version": "7.0",
+    "description": "Advanced social media field filler with modern architecture and enhanced features",
+    "author": "Social Filler Pro Team",
+    "homepage_url": "https://github.com/social-filler-pro/extension",
+    
     "background": {
         "service_worker": "background.js",
         "type": "module"
     },
-    "content_scripts": [{
-        "matches": ["<all_urls>"],
-        "exclude_matches": [
-            "https://asana.com/*",
-            "http://asana.com/*",
-            "https://*.asana.com/*",
-            "http://*.asana.com/*",
-            "https://suite.ewscrm.com/*",
-            "http://suite.ewscrm.com/*",
-            "https://*.suite.ewscrm.com/*",
-            "http://*.suite.ewscrm.com/*",
-            "https://www.photopea.com/"
-        ],
-        "js": ["content-core.js", "content-universal.js", "content-radio.js"],
-        "run_at": "document_end"
-    },
-      {
-    "matches": [
-      "https://www.allstatesusadirectory.com/submit.php",
-      "https://www.hitwebdirectory.com/submit.php"
+    
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "exclude_matches": [
+                "https://asana.com/*",
+                "http://asana.com/*",
+                "https://*.asana.com/*",
+                "http://*.asana.com/*",
+                "https://suite.ewscrm.com/*",
+                "http://suite.ewscrm.com/*",
+                "https://*.suite.ewscrm.com/*",
+                "http://*.suite.ewscrm.com/*",
+                "https://www.photopea.com/*",
+                "https://chrome.google.com/webstore/*",
+                "https://addons.mozilla.org/*",
+                "https://microsoftedge.microsoft.com/addons/*"
+            ],
+            "js": [
+                "utils-parser.js",
+                "field-detector-optimized.js",
+                "content-core.js",
+                "content-universal.js",
+                "content-radio.js"
+            ],
+            "run_at": "document_end",
+            "all_frames": false
+        },
+        {
+            "matches": [
+                "https://www.allstatesusadirectory.com/submit.php",
+                "https://www.hitwebdirectory.com/submit.php"
+            ],
+            "js": ["inject-category-filter.js"],
+            "run_at": "document_idle",
+            "all_frames": false
+        }
     ],
-    "js": ["inject-category-filter.js"],
-    "run_at": "document_idle"
-    }],
+    
     "permissions": [
         "storage",
         "activeTab",
         "tabs",
         "scripting"
     ],
+    
     "host_permissions": [
         "<all_urls>"
     ],
+    
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "popup.html",
+        "default_title": "Social Filler Pro",
+        "default_icon": {
+            "16": "icons/icon16.svg",
+            "32": "icons/icon32.svg",
+            "48": "icons/icon48.svg",
+            "128": "icons/icon128.svg"
+        }
     },
+    
+    "options_page": "settings.html",
+    
+    "icons": {
+        "16": "icons/icon16.svg",
+        "32": "icons/icon32.svg",
+        "48": "icons/icon48.svg",
+        "128": "icons/icon128.svg"
+    },
+    
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "utils-parser.js",
+                "field-detector-optimized.js",
+                "enhanced-sheets-parser.js",
+                "description-auto-filler.js",
+                "duplicate-prevention.js"
+            ],
+            "matches": ["<all_urls>"]
+        }
+    ],
+    
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self';"
+    }
 }

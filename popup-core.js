@@ -1,13 +1,197 @@
-// Core popup functionality - optimized and modular
-const PopupLogger = {
-    log: (...args) => console.log('[FILLER]', ...args),
-    warn: (...args) => console.warn('[FILLER]', ...args),
-    error: (...args) => console.error('[FILLER]', ...args)
+/**
+ * Core Popup Script for Social Filler Pro Extension
+ * 
+ * This module provides:
+ * - Service management
+ * - Social links management
+ * - Password management
+ * - Category and location management
+ * - Event handling and UI updates
+ * 
+ * @version 7.0
+ * @author Social Filler Pro Team
+ */
+
+'use strict';
+
+// ============================================================================
+// CONSTANTS & CONFIGURATION
+// ============================================================================
+
+const POPUP_CONFIG = {
+    VERSION: '7.0',
+    STORAGE_KEYS: {
+        SERVICES: 'services',
+        SOCIAL_LINKS: 'socialLinks',
+        PASSWORD: 'fillPassword',
+        SELECTED_CATEGORY: 'selectedCategory',
+        SELECTED_LOCATION: 'selectedLocation',
+        SETTINGS: 'settings'
+    },
+    DEFAULT_SERVICES: {
+        facebook: { enabled: true, priority: 1 },
+        instagram: { enabled: true, priority: 2 },
+        twitter: { enabled: true, priority: 3 },
+        youtube: { enabled: true, priority: 4 },
+        linkedin: { enabled: true, priority: 5 },
+        pinterest: { enabled: true, priority: 6 },
+        tiktok: { enabled: true, priority: 7 },
+        snapchat: { enabled: true, priority: 8 },
+        website: { enabled: true, priority: 9 }
+    },
+    MESSAGE_TYPES: {
+        CATEGORY_UPDATED: 'CATEGORY_UPDATED',
+        LOCATION_UPDATED: 'LOCATION_UPDATED'
+    }
 };
 
-// Utility functions
-const PopupUtils = {
-    debounce(func, wait) {
+// ============================================================================
+// UTILITY CLASSES
+// ============================================================================
+
+/**
+ * Enhanced logging system for popup
+ */
+class PopupLogger {
+    constructor(context = 'Popup') {
+        this.context = context;
+        this.logLevel = 2; // INFO level
+    }
+
+    setLogLevel(level) {
+        this.logLevel = typeof level === 'string' 
+            ? ['error', 'warn', 'info', 'debug'].indexOf(level.toLowerCase())
+            : level;
+    }
+
+    log(level, message, ...args) {
+        const levelNum = typeof level === 'string' 
+            ? ['error', 'warn', 'info', 'debug'].indexOf(level.toLowerCase())
+            : level;
+        
+        if (levelNum <= this.logLevel) {
+            const timestamp = new Date().toISOString();
+            const prefix = `[${timestamp}] [${this.context}]`;
+            
+            switch (levelNum) {
+                case 0: // ERROR
+                    console.error(prefix, message, ...args);
+                    break;
+                case 1: // WARN
+                    console.warn(prefix, message, ...args);
+                    break;
+                case 2: // INFO
+                    console.info(prefix, message, ...args);
+                    break;
+                case 3: // DEBUG
+                    console.debug(prefix, message, ...args);
+                    break;
+            }
+        }
+    }
+
+    error(message, ...args) { this.log(0, message, ...args); }
+    warn(message, ...args) { this.log(1, message, ...args); }
+    info(message, ...args) { this.log(2, message, ...args); }
+    debug(message, ...args) { this.log(3, message, ...args); }
+}
+
+/**
+ * Utility functions for popup
+ */
+class PopupUtils {
+    /**
+     * Show status message to user
+     */
+    static showStatus(message, type = 'info', duration = 3000) {
+        try {
+            // Create or update status element
+            let statusElement = document.getElementById('statusMessage');
+            if (!statusElement) {
+                statusElement = document.createElement('div');
+                statusElement.id = 'statusMessage';
+                statusElement.style.cssText = `
+                    position: fixed;
+                    top: 10px;
+                    right: 10px;
+                    padding: 10px 15px;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    z-index: 10000;
+                    max-width: 300px;
+                    word-wrap: break-word;
+                    transition: all 0.3s ease;
+                `;
+                document.body.appendChild(statusElement);
+            }
+
+            // Set message and styling
+            statusElement.textContent = message;
+            statusElement.style.display = 'block';
+
+            // Set colors based on type
+            const colors = {
+                success: { bg: '#d4edda', color: '#155724', border: '#c3e6cb' },
+                error: { bg: '#f8d7da', color: '#721c24', border: '#f5c6cb' },
+                warning: { bg: '#fff3cd', color: '#856404', border: '#ffeaa7' },
+                info: { bg: '#d1ecf1', color: '#0c5460', border: '#bee5eb' }
+            };
+
+            const style = colors[type] || colors.info;
+            statusElement.style.backgroundColor = style.bg;
+            statusElement.style.color = style.color;
+            statusElement.style.border = `1px solid ${style.border}`;
+
+            // Auto-hide after duration
+            setTimeout(() => {
+                if (statusElement) {
+                    statusElement.style.display = 'none';
+                }
+            }, duration);
+
+        } catch (error) {
+            console.error('Error showing status message:', error);
+        }
+    }
+
+    /**
+     * Escape HTML to prevent XSS
+     */
+    static escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * Validate URL format
+     */
+    static isValidUrl(url) {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Normalize URL format
+     */
+    static normalizeUrl(url) {
+        if (!url) return '';
+        url = url.trim();
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+        }
+        return url;
+    }
+
+    /**
+     * Debounce function
+     */
+    static debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
             const later = () => {
@@ -17,601 +201,1010 @@ const PopupUtils = {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
-    },
-
-    showStatus(message, type = 'success') {
-        const status = document.getElementById('status');
-        if (status) {
-            status.textContent = message;
-            status.className = `status ${type}`;
-            status.style.display = 'block';
-            setTimeout(() => {
-                status.textContent = '';
-                status.className = 'status';
-                status.style.display = 'none';
-            }, 3000);
-        }
-    },
-
-    isValidUrl(url) {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
-    },
-
-    stringToArray(str) {
-        if (!str) return [];
-        return str.split(',').map(s => s.trim()).filter(s => s);
-    },
-
-    arrayToString(arr) {
-        if (!Array.isArray(arr)) return '';
-        return arr.join(', ');
-    },
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
     }
-};
 
-// Service management
-const ServiceManager = {
+    /**
+     * Generate unique ID
+     */
+    static generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+}
+
+// ============================================================================
+// SERVICE MANAGEMENT
+// ============================================================================
+
+class ServiceManager {
+    constructor(logger) {
+        this.logger = logger;
+        this.services = {};
+    }
+
+    /**
+     * Load services from storage
+     */
     async loadServices() {
         try {
-            const { services = {} } = await chrome.storage.sync.get('services');
-            const servicesList = document.getElementById('services-list');
-            if (servicesList) {
-                servicesList.innerHTML = '';
-                Object.entries(services).forEach(([name, config]) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <span>${name}</span>
-                        <div class="service-actions">
-                            <button class="edit-service" data-service="${name}">Edit</button>
-                            <button class="delete-service" data-service="${name}">Delete</button>
-                        </div>
-                    `;
-                    servicesList.appendChild(li);
-                });
-            }
-            return services;
+            const result = await chrome.storage.sync.get(POPUP_CONFIG.STORAGE_KEYS.SERVICES);
+            this.services = result[POPUP_CONFIG.STORAGE_KEYS.SERVICES] || POPUP_CONFIG.DEFAULT_SERVICES;
+            this.logger.debug('Services loaded:', Object.keys(this.services).length);
+            return this.services;
         } catch (error) {
-            PopupLogger.error('Error loading services:', error);
-            PopupUtils.showStatus('Failed to load services', 'error');
-            return {};
-        }
-    },
-
-    loadServiceIntoEditor(serviceName, serviceConfig) {
-        document.getElementById('serviceName').value = serviceName;
-        document.getElementById('serviceKeywords').value = PopupUtils.arrayToString(serviceConfig.keywords || []);
-
-        // Handle patterns which could be RegExp objects or pattern objects
-        let patternsString = '';
-        if (serviceConfig.patterns && Array.isArray(serviceConfig.patterns)) {
-            patternsString = serviceConfig.patterns.map(p => {
-                if (p instanceof RegExp) {
-                    return p.source;
-                } else if (p && typeof p === 'object' && p.source) {
-                    return p.source;
-                }
-                return p?.toString() || '';
-            }).join('\n');
-        }
-        document.getElementById('servicePatterns').value = patternsString;
-
-        document.getElementById('serviceExclude').value = PopupUtils.arrayToString(serviceConfig.exclude || []);
-        document.getElementById('serviceWeight').value = serviceConfig.weight || 1;
-        document.getElementById('serviceName').focus();
-    },
-
-    async saveService() {
-        try {
-            const name = document.getElementById('serviceName').value.trim().toLowerCase();
-            if (!name) {
-                PopupUtils.showStatus('Service name is required', 'error');
-                return;
-            }
-
-            const keywords = PopupUtils.stringToArray(document.getElementById('serviceKeywords').value);
-            if (keywords.length === 0) {
-                PopupUtils.showStatus('At least one keyword is required', 'error');
-                return;
-            }
-
-            const patternsText = document.getElementById('servicePatterns').value.trim();
-            if (!patternsText) {
-                PopupUtils.showStatus('At least one URL pattern is required', 'error');
-                return;
-            }
-
-            // Convert pattern strings to RegExp objects, validating each
-            const patterns = [];
-            const patternLines = patternsText.split('\n').filter(line => line.trim());
-            
-            for (const line of patternLines) {
-                const patternStr = line.trim();
-                if (!patternStr) continue;
-                
-                try {
-                    // Check if pattern is already in regex format
-                    const match = patternStr.match(/^\/(.+)\/([gimyus]*)$/);
-                    const pattern = match 
-                        ? { source: match[1], flags: match[2] || 'i' }
-                        : { source: patternStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags: 'i' };
-                        
-                    // Validate pattern by trying to create RegExp
-                    new RegExp(pattern.source, pattern.flags);
-                    patterns.push(pattern);
-                } catch (e) {
-                    PopupUtils.showStatus(`Invalid pattern: "${patternStr}". Please check the syntax.`, 'error');
-                    PopupLogger.error(`Invalid pattern: ${patternStr}`, e);
-                    return;
-                }
-            }
-
-            if (patterns.length === 0) {
-                PopupUtils.showStatus('At least one valid URL pattern is required', 'error');
-                return;
-            }
-
-            const exclude = PopupUtils.stringToArray(document.getElementById('serviceExclude').value);
-            const weight = parseFloat(document.getElementById('serviceWeight').value) || 1;
-
-            // Convert RegExp back to string/flags object for storage
-            const storablePatterns = patterns.map(p => ({ source: p.source, flags: p.flags }));
-
-            const serviceConfig = {
-                keywords,
-                patterns: storablePatterns,
-                exclude,
-                weight
-            };
-
-            const { services = {} } = await chrome.storage.sync.get('services');
-            services[name] = serviceConfig;
-
-            await chrome.storage.sync.set({ services });
-
-            PopupUtils.showStatus('Service saved successfully');
-            await this.loadServices();
-            this.clearServiceForm();
-        } catch (error) {
-            PopupLogger.error('Error saving service:', error);
-            PopupUtils.showStatus('Failed to save service', 'error');
-        }
-    },
-
-    clearServiceForm() {
-        document.getElementById('serviceName').value = '';
-        document.getElementById('serviceKeywords').value = '';
-        document.getElementById('servicePatterns').value = '';
-        document.getElementById('serviceExclude').value = '';
-        document.getElementById('serviceWeight').value = '1';
-    },
-
-    async deleteService(serviceName) {
-        if (confirm(`Are you sure you want to delete the service "${serviceName}"?`)) {
-            try {
-                const { services = {} } = await chrome.storage.sync.get('services');
-                delete services[serviceName];
-                await chrome.storage.sync.set({ services });
-                await this.loadServices();
-                PopupUtils.showStatus('Service deleted successfully');
-            } catch (error) {
-                PopupLogger.error('Error deleting service:', error);
-                PopupUtils.showStatus('Failed to delete service', 'error');
-            }
+            this.logger.error('Error loading services:', error);
+            this.services = POPUP_CONFIG.DEFAULT_SERVICES;
+            return this.services;
         }
     }
-};
 
-// Social links management
-const SocialLinksManager = {
-    async loadSocialLinks(servicesMap) {
-        const container = document.getElementById('fieldsContainer');
-        if (!container) {
-            PopupLogger.error("Element with ID 'fieldsContainer' not found.");
-            return;
-        }
-
-        container.innerHTML = '';
-
+    /**
+     * Save services to storage
+     */
+    async saveServices() {
         try {
-            const { socialLinks = {} } = await chrome.storage.sync.get('socialLinks');
-            const serviceNames = Object.keys(servicesMap);
+            await chrome.storage.sync.set({
+                [POPUP_CONFIG.STORAGE_KEYS.SERVICES]: this.services
+            });
+            this.logger.debug('Services saved successfully');
+            return true;
+        } catch (error) {
+            this.logger.error('Error saving services:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Toggle service enabled state
+     */
+    async toggleService(serviceName) {
+        try {
+            if (this.services[serviceName]) {
+                this.services[serviceName].enabled = !this.services[serviceName].enabled;
+                await this.saveServices();
+                this.logger.info(`Service ${serviceName} ${this.services[serviceName].enabled ? 'enabled' : 'disabled'}`);
+                return this.services[serviceName].enabled;
+            }
+            return false;
+        } catch (error) {
+            this.logger.error(`Error toggling service ${serviceName}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Reset services to default
+     */
+    async resetToDefault() {
+        try {
+            this.services = { ...POPUP_CONFIG.DEFAULT_SERVICES };
+            await this.saveServices();
+            this.logger.info('Services reset to default');
+            return true;
+        } catch (error) {
+            this.logger.error('Error resetting services:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get enabled services
+     */
+    getEnabledServices() {
+        return Object.entries(this.services)
+            .filter(([_, config]) => config.enabled)
+            .map(([name, _]) => name);
+    }
+}
+
+// ============================================================================
+// SOCIAL LINKS MANAGEMENT
+// ============================================================================
+
+class SocialLinksManager {
+    constructor(logger) {
+        this.logger = logger;
+        this.socialLinks = [];
+    }
+
+    /**
+     * Load social links from storage
+     */
+    async loadSocialLinks() {
+        try {
+            const result = await chrome.storage.sync.get(POPUP_CONFIG.STORAGE_KEYS.SOCIAL_LINKS);
+            const links = result[POPUP_CONFIG.STORAGE_KEYS.SOCIAL_LINKS];
+            
+            if (Array.isArray(links)) {
+                this.socialLinks = links;
+            } else if (links && typeof links === 'object') {
+                // Migrate from old object format to new array format
+                this.socialLinks = Object.entries(links).map(([platform, url]) => ({
+                    id: PopupUtils.generateId(),
+                    platform: platform.toLowerCase(),
+                    url: url,
+                    addedAt: Date.now(),
+                    isActive: true
+                }));
+                await this.saveSocialLinks();
+                this.logger.info(`Migrated ${this.socialLinks.length} social links to new format`);
+            } else {
+                this.socialLinks = [];
+            }
+            
+            this.logger.debug('Social links loaded:', this.socialLinks.length);
+            return this.socialLinks;
+        } catch (error) {
+            this.logger.error('Error loading social links:', error);
+            this.socialLinks = [];
+            return this.socialLinks;
+        }
+    }
+
+    /**
+     * Save social links to storage
+     */
+    async saveSocialLinks() {
+        try {
+            await chrome.storage.sync.set({
+                [POPUP_CONFIG.STORAGE_KEYS.SOCIAL_LINKS]: this.socialLinks
+            });
+            this.logger.debug('Social links saved successfully');
+            return true;
+        } catch (error) {
+            this.logger.error('Error saving social links:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Add new social link
+     */
+    async addSocialLink(platform, url) {
+        try {
+            // Check for duplicates
+            const duplicate = this.socialLinks.find(link => 
+                link.platform.toLowerCase() === platform.toLowerCase() || 
+                link.url === url
+            );
+            
+            if (duplicate) {
+                throw new Error(`Duplicate found: ${duplicate.platform} with URL ${duplicate.url}`);
+            }
+
+            const newLink = {
+                id: PopupUtils.generateId(),
+                platform: platform.toLowerCase(),
+                url: PopupUtils.normalizeUrl(url),
+                addedAt: Date.now(),
+                isActive: true
+            };
+
+            this.socialLinks.push(newLink);
+            await this.saveSocialLinks();
+            this.logger.info(`Added social link: ${platform} - ${url}`);
+            return newLink;
+        } catch (error) {
+            this.logger.error('Error adding social link:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Update existing social link
+     */
+    async updateSocialLink(id, updates) {
+        try {
+            const index = this.socialLinks.findIndex(link => link.id === id);
+            if (index === -1) {
+                throw new Error('Social link not found');
+            }
+
+            // Check for duplicates (excluding current link)
+            if (updates.platform || updates.url) {
+                const duplicate = this.socialLinks.find(link => 
+                    link.id !== id && (
+                        (updates.platform && link.platform.toLowerCase() === updates.platform.toLowerCase()) ||
+                        (updates.url && link.url === updates.url)
+                    )
+                );
+                
+                if (duplicate) {
+                    throw new Error(`Duplicate found: ${duplicate.platform} with URL ${duplicate.url}`);
+                }
+            }
+
+            this.socialLinks[index] = { ...this.socialLinks[index], ...updates, updatedAt: Date.now() };
+            await this.saveSocialLinks();
+            this.logger.info(`Updated social link: ${id}`);
+            return this.socialLinks[index];
+        } catch (error) {
+            this.logger.error('Error updating social link:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Delete social link
+     */
+    async deleteSocialLink(id) {
+        try {
+            const index = this.socialLinks.findIndex(link => link.id === id);
+            if (index === -1) {
+                throw new Error('Social link not found');
+            }
+
+            const deletedLink = this.socialLinks.splice(index, 1)[0];
+            await this.saveSocialLinks();
+            this.logger.info(`Deleted social link: ${deletedLink.platform} - ${deletedLink.url}`);
+            return true;
+        } catch (error) {
+            this.logger.error('Error deleting social link:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Validate social link
+     */
+    validateSocialLink(platform, url) {
+        const errors = [];
+        
+        if (!platform || platform.trim().length === 0) {
+            errors.push('Platform is required');
+        }
+        
+        if (!url || url.trim().length === 0) {
+            errors.push('URL is required');
+        } else {
+            const normalizedUrl = PopupUtils.normalizeUrl(url);
+            if (!PopupUtils.isValidUrl(normalizedUrl)) {
+                errors.push('Invalid URL format');
+            }
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors: errors
+        };
+    }
+
+    /**
+     * Get social links as object (for compatibility)
+     */
+    getSocialLinksAsObject() {
+        const linksObject = {};
+        this.socialLinks.forEach(link => {
+            if (link.isActive && link.url) {
+                linksObject[link.platform] = link.url;
+            }
+        });
+        return linksObject;
+    }
+}
+
+// ============================================================================
+// PASSWORD MANAGEMENT
+// ============================================================================
+
+class PasswordManager {
+    constructor(logger) {
+        this.logger = logger;
+    }
+
+    /**
+     * Load password from storage
+     */
+    async loadPassword() {
+        try {
+            const result = await chrome.storage.sync.get(POPUP_CONFIG.STORAGE_KEYS.PASSWORD);
+            return result[POPUP_CONFIG.STORAGE_KEYS.PASSWORD] || '';
+        } catch (error) {
+            this.logger.error('Error loading password:', error);
+            return '';
+        }
+    }
+
+    /**
+     * Save password to storage
+     */
+    async savePassword(password) {
+        try {
+            await chrome.storage.sync.set({
+                [POPUP_CONFIG.STORAGE_KEYS.PASSWORD]: password
+            });
+            this.logger.debug('Password saved successfully');
+            return true;
+        } catch (error) {
+            this.logger.error('Error saving password:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Clear password from storage
+     */
+    async clearPassword() {
+        try {
+            await chrome.storage.sync.remove(POPUP_CONFIG.STORAGE_KEYS.PASSWORD);
+            this.logger.info('Password cleared');
+            return true;
+        } catch (error) {
+            this.logger.error('Error clearing password:', error);
+            throw error;
+        }
+    }
+}
+
+// ============================================================================
+// CATEGORY MANAGEMENT
+// ============================================================================
+
+class CategoryManager {
+    constructor(logger) {
+        this.logger = logger;
+    }
+
+    /**
+     * Load category from storage
+     */
+    async loadCategory() {
+        try {
+            const result = await chrome.storage.sync.get(POPUP_CONFIG.STORAGE_KEYS.SELECTED_CATEGORY);
+            const category = result[POPUP_CONFIG.STORAGE_KEYS.SELECTED_CATEGORY] || '';
+            
+            const categoryInput = document.getElementById('categoryValue');
+            if (categoryInput) {
+                categoryInput.value = category;
+            }
+            
+            this.logger.debug('Category loaded:', category);
+            return category;
+        } catch (error) {
+            this.logger.error('Error loading category:', error);
+            return '';
+        }
+    }
+
+    /**
+     * Save category to storage
+     */
+    async saveCategory() {
+        try {
+            const categoryInput = document.getElementById('categoryValue');
+            if (!categoryInput) {
+                throw new Error('Category input not found');
+            }
+            
+            const category = categoryInput.value.trim();
+            if (!category) {
+                PopupUtils.showStatus('Please enter a category', 'error');
+                return false;
+            }
+
+            await chrome.storage.sync.set({
+                [POPUP_CONFIG.STORAGE_KEYS.SELECTED_CATEGORY]: category
+            });
+            
+            PopupUtils.showStatus(`Category "${category}" saved successfully`);
+            this.logger.info('Category saved:', category);
+            
+            // Notify content scripts
+            await this.notifyContentScripts(POPUP_CONFIG.MESSAGE_TYPES.CATEGORY_UPDATED, { category });
+            
+            return true;
+        } catch (error) {
+            this.logger.error('Error saving category:', error);
+            PopupUtils.showStatus('Failed to save category', 'error');
+            return false;
+        }
+    }
+
+    /**
+     * Clear category form
+     */
+    clearCategoryForm() {
+        const categoryInput = document.getElementById('categoryValue');
+        if (categoryInput) {
+            categoryInput.value = '';
+        }
+    }
+
+    /**
+     * Get selected category
+     */
+    async getSelectedCategory() {
+        try {
+            const result = await chrome.storage.sync.get(POPUP_CONFIG.STORAGE_KEYS.SELECTED_CATEGORY);
+            return result[POPUP_CONFIG.STORAGE_KEYS.SELECTED_CATEGORY] || null;
+        } catch (error) {
+            this.logger.error('Error getting selected category:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Notify content scripts about category update
+     */
+    async notifyContentScripts(messageType, data) {
+        try {
+            const tabs = await chrome.tabs.query({});
+            const notifications = tabs.map(tab => {
+                if (tab.id) {
+                    return chrome.tabs.sendMessage(tab.id, {
+                        type: messageType,
+                        ...data
+                    }).catch(() => {}); // Ignore errors for tabs without content script
+                }
+            });
+            await Promise.allSettled(notifications);
+            this.logger.debug('Notified content scripts about category update');
+        } catch (error) {
+            this.logger.warn('Could not notify content scripts:', error);
+        }
+    }
+}
+
+// ============================================================================
+// LOCATION MANAGEMENT
+// ============================================================================
+
+class LocationManager {
+    constructor(logger) {
+        this.logger = logger;
+    }
+
+    /**
+     * Load location from storage
+     */
+    async loadLocation() {
+        try {
+            const result = await chrome.storage.sync.get(POPUP_CONFIG.STORAGE_KEYS.SELECTED_LOCATION);
+            const locationData = result[POPUP_CONFIG.STORAGE_KEYS.SELECTED_LOCATION] || {};
+            
+            // Load country
+            const countrySelect = document.getElementById('countryValue');
+            if (countrySelect) {
+                countrySelect.value = locationData.country || '';
+            }
+            
+            // Load region
+            const regionInput = document.getElementById('regionValue');
+            if (regionInput) {
+                regionInput.value = locationData.region || '';
+            }
+            
+            // Load city
+            const cityInput = document.getElementById('cityValue');
+            if (cityInput) {
+                cityInput.value = locationData.city || '';
+            }
+            
+            // Load address
+            const addressInput = document.getElementById('addressValue');
+            if (addressInput) {
+                addressInput.value = locationData.address || '';
+            }
+            
+            this.logger.debug('Location loaded:', locationData);
+            return locationData;
+        } catch (error) {
+            this.logger.error('Error loading location:', error);
+            return {};
+        }
+    }
+
+    /**
+     * Save location to storage
+     */
+    async saveLocation() {
+        try {
+            const country = document.getElementById('countryValue')?.value || '';
+            const region = document.getElementById('regionValue')?.value?.trim() || '';
+            const city = document.getElementById('cityValue')?.value?.trim() || '';
+            const address = document.getElementById('addressValue')?.value?.trim() || '';
+            
+            if (!country && !region && !city && !address) {
+                PopupUtils.showStatus('Please enter at least one location field', 'error');
+                return false;
+            }
+
+            const locationData = { country, region, city, address };
+
+            await chrome.storage.sync.set({
+                [POPUP_CONFIG.STORAGE_KEYS.SELECTED_LOCATION]: locationData
+            });
+            
+            const filledFields = Object.values(locationData).filter(v => v).length;
+            PopupUtils.showStatus(`Location saved successfully (${filledFields} fields)`);
+            this.logger.info('Location saved:', locationData);
+            
+            // Notify content scripts
+            await this.notifyContentScripts(POPUP_CONFIG.MESSAGE_TYPES.LOCATION_UPDATED, { location: locationData });
+            
+            return true;
+        } catch (error) {
+            this.logger.error('Error saving location:', error);
+            PopupUtils.showStatus('Failed to save location', 'error');
+            return false;
+        }
+    }
+
+    /**
+     * Clear location form
+     */
+    clearLocationForm() {
+        const fields = ['countryValue', 'regionValue', 'cityValue', 'addressValue'];
+        fields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.value = '';
+            }
+        });
+    }
+
+    /**
+     * Get selected location
+     */
+    async getSelectedLocation() {
+        try {
+            const result = await chrome.storage.sync.get(POPUP_CONFIG.STORAGE_KEYS.SELECTED_LOCATION);
+            return result[POPUP_CONFIG.STORAGE_KEYS.SELECTED_LOCATION] || null;
+        } catch (error) {
+            this.logger.error('Error getting selected location:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Notify content scripts about location update
+     */
+    async notifyContentScripts(messageType, data) {
+        try {
+            const tabs = await chrome.tabs.query({});
+            const notifications = tabs.map(tab => {
+                if (tab.id) {
+                    return chrome.tabs.sendMessage(tab.id, {
+                        type: messageType,
+                        ...data
+                    }).catch(() => {}); // Ignore errors for tabs without content script
+                }
+            });
+            await Promise.allSettled(notifications);
+            this.logger.debug('Notified content scripts about location update');
+        } catch (error) {
+            this.logger.warn('Could not notify content scripts:', error);
+        }
+    }
+}
+
+// ============================================================================
+// RESET MANAGEMENT
+// ============================================================================
+
+class ResetManager {
+    constructor(logger, serviceManager, socialLinksManager, passwordManager) {
+        this.logger = logger;
+        this.serviceManager = serviceManager;
+        this.socialLinksManager = socialLinksManager;
+        this.passwordManager = passwordManager;
+    }
+
+    /**
+     * Reset all data to defaults
+     */
+    async resetAll() {
+        try {
+            if (!confirm('Are you sure you want to reset all data? This cannot be undone!')) {
+                return false;
+            }
+
+            this.logger.info('Resetting all data to defaults');
+            
+            // Reset services
+            await this.serviceManager.resetToDefault();
+            
+            // Clear social links
+            this.socialLinksManager.socialLinks = [];
+            await this.socialLinksManager.saveSocialLinks();
+            
+            // Clear password
+            await this.passwordManager.clearPassword();
+            
+            // Clear category
+            await chrome.storage.sync.remove(POPUP_CONFIG.STORAGE_KEYS.SELECTED_CATEGORY);
+            
+            // Clear location
+            await chrome.storage.sync.remove(POPUP_CONFIG.STORAGE_KEYS.SELECTED_LOCATION);
+            
+            PopupUtils.showStatus('All data reset to defaults', 'success');
+            this.logger.info('All data reset successfully');
+            
+            // Reload the popup
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+            
+            return true;
+        } catch (error) {
+            this.logger.error('Error resetting all data:', error);
+            PopupUtils.showStatus('Failed to reset data', 'error');
+            return false;
+        }
+    }
+}
+
+// ============================================================================
+// EVENT MANAGEMENT
+// ============================================================================
+
+class EventManager {
+    constructor(logger, serviceManager, socialLinksManager, passwordManager, categoryManager, locationManager, resetManager) {
+        this.logger = logger;
+        this.serviceManager = serviceManager;
+        this.socialLinksManager = socialLinksManager;
+        this.passwordManager = passwordManager;
+        this.categoryManager = categoryManager;
+        this.locationManager = locationManager;
+        this.resetManager = resetManager;
+    }
+
+    /**
+     * Setup all event listeners
+     */
+    setupEventListeners() {
+        try {
+            this.logger.debug('Setting up event listeners');
+            
+            // Save button
+            const saveButton = document.getElementById('saveButton');
+            if (saveButton) {
+                saveButton.addEventListener('click', () => this.handleSave());
+            }
+
+            // Settings button
+            const settingsButton = document.getElementById('settingsButton');
+            if (settingsButton) {
+                settingsButton.addEventListener('click', () => {
+                    chrome.tabs.create({ url: chrome.runtime.getURL('settings.html') });
+                });
+            }
+
+            // Reset button
+            const resetButton = document.getElementById('resetButton');
+            if (resetButton) {
+                resetButton.addEventListener('click', () => this.resetManager.resetAll());
+            }
+
+            // Category save button
+            const saveCategoryButton = document.getElementById('saveCategory');
+            if (saveCategoryButton) {
+                saveCategoryButton.addEventListener('click', () => this.categoryManager.saveCategory());
+            }
+
+            // Location save button
+            const saveLocationButton = document.getElementById('saveLocation');
+            if (saveLocationButton) {
+                saveLocationButton.addEventListener('click', () => this.locationManager.saveLocation());
+            }
+
+            // Social link delete buttons
+            this.setupSocialLinkDeleteListeners();
+
+            this.logger.debug('Event listeners setup complete');
+        } catch (error) {
+            this.logger.error('Error setting up event listeners:', error);
+        }
+    }
+
+    /**
+     * Setup social link delete button listeners
+     */
+    setupSocialLinkDeleteListeners() {
+        const container = document.getElementById('fieldsContainer');
+        if (container) {
+            container.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-link-btn')) {
+                    const linkId = e.target.dataset.linkId;
+                    this.handleDeleteLink(linkId);
+                }
+            });
+        }
+    }
+
+    /**
+     * Handle save action
+     */
+    async handleSave() {
+        try {
+            this.logger.info('Handling save action');
+            
+            // Save social links
+            await this.saveSocialLinks();
+            
+            // Save password
+            await this.savePassword();
+            
+            PopupUtils.showStatus('All changes saved successfully!', 'success');
+            
+        } catch (error) {
+            this.logger.error('Error during save:', error);
+            PopupUtils.showStatus('Failed to save changes', 'error');
+        }
+    }
+
+    /**
+     * Save social links from UI
+     */
+    async saveSocialLinks() {
+        try {
+            const inputs = document.querySelectorAll('#fieldsContainer input[data-service]');
+            let hasChanges = false;
+
+            for (const input of inputs) {
+                const service = input.dataset.service;
+                const linkId = input.dataset.linkId;
+                const value = input.value.trim();
+                
+                if (value) {
+                    // Validate the link
+                    const validation = this.socialLinksManager.validateSocialLink(service, value);
+                    if (!validation.isValid) {
+                        PopupUtils.showStatus(`Invalid ${service}: ${validation.errors.join(', ')}`, 'error');
+                        input.focus();
+                        return;
+                    }
+
+                    const normalizedUrl = PopupUtils.normalizeUrl(value);
+                    
+                    if (linkId) {
+                        // Update existing link
+                        const existingLink = this.socialLinksManager.socialLinks.find(link => link.id === linkId);
+                        if (existingLink && existingLink.url !== normalizedUrl) {
+                            await this.socialLinksManager.updateSocialLink(linkId, { url: normalizedUrl });
+                            hasChanges = true;
+                        }
+                    } else {
+                        // Add new link
+                        try {
+                            await this.socialLinksManager.addSocialLink(service, normalizedUrl);
+                            hasChanges = true;
+                        } catch (error) {
+                            if (error.message.includes('Duplicate found')) {
+                                PopupUtils.showStatus(`Duplicate ${service} link found`, 'warning');
+                            } else {
+                                throw error;
+                            }
+                        }
+                    }
+                } else if (linkId) {
+                    // Remove link if input is empty
+                    await this.socialLinksManager.deleteSocialLink(linkId);
+                    hasChanges = true;
+                }
+            }
+
+            if (hasChanges) {
+                this.logger.info('Social links saved successfully');
+            }
+
+        } catch (error) {
+            this.logger.error('Error saving social links:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Save password from UI
+     */
+    async savePassword() {
+        try {
+            const passwordField = document.getElementById('passwordValue');
+            if (passwordField) {
+                const password = passwordField.value;
+                if (password) {
+                    await this.passwordManager.savePassword(password);
+                    this.logger.debug('Password saved successfully');
+                } else {
+                    await this.passwordManager.clearPassword();
+                    this.logger.debug('Password cleared');
+                }
+            }
+        } catch (error) {
+            this.logger.error('Error saving password:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Handle delete link action
+     */
+    async handleDeleteLink(linkId) {
+        try {
+            await this.socialLinksManager.deleteSocialLink(linkId);
+            PopupUtils.showStatus('Social link deleted successfully');
+            
+            // Reload the UI
+            await this.loadSocialLinksUI();
+            
+        } catch (error) {
+            PopupUtils.showStatus(`Failed to delete link: ${error.message}`, 'error');
+        }
+    }
+
+    /**
+     * Load social links UI
+     */
+    async loadSocialLinksUI() {
+        try {
+            const container = document.getElementById('fieldsContainer');
+            if (!container) {
+                this.logger.error("Element with ID 'fieldsContainer' not found.");
+                return;
+            }
+
+            container.innerHTML = '';
+
+            const services = await this.serviceManager.loadServices();
+            const serviceNames = Object.keys(services);
+
+            // Create a map of existing links for quick lookup
+            const linksMap = {};
+            this.socialLinksManager.socialLinks.forEach(link => {
+                linksMap[link.platform] = link;
+            });
 
             serviceNames.forEach(service => {
                 const div = document.createElement('div');
-                div.className = 'field-item';
+                div.className = 'field-item social-link-item';
                 const inputId = `service-input-${service}`;
                 
                 const serviceDisplay = service.charAt(0).toUpperCase() + service.slice(1);
                 const escapedService = PopupUtils.escapeHtml(service);
+                const existingLink = linksMap[service];
                 
                 div.innerHTML = `
                     <label for="${inputId}">
                         ${serviceDisplay}:
                     </label>
-                    <input type="url"
-                           id="${inputId}"
-                           data-service="${escapedService}"
-                           value="${socialLinks[service] ? PopupUtils.escapeHtml(socialLinks[service]) : ''}"
-                           placeholder="https://${service}.com/yourprofile">
+                    <div class="social-input-group">
+                        <input type="url"
+                               id="${inputId}"
+                               data-service="${escapedService}"
+                               data-link-id="${existingLink ? existingLink.id : ''}"
+                               value="${existingLink ? PopupUtils.escapeHtml(existingLink.url) : ''}"
+                               placeholder="https://${service}.com/yourprofile">
+                        ${existingLink ? `
+                            <button class="delete-link-btn" data-link-id="${existingLink.id}" title="Delete this link">
+                                🗑️
+                            </button>
+                        ` : ''}
+                    </div>
                 `;
                 container.appendChild(div);
             });
+
         } catch (error) {
-            PopupLogger.error('Error loading social links:', error);
+            this.logger.error('Error loading social links UI:', error);
             PopupUtils.showStatus('Failed to load social links', 'error');
         }
-    },
+    }
+}
 
-    async saveLinks() {
+// ============================================================================
+// POPUP INITIALIZER
+// ============================================================================
+
+class PopupInitializer {
+    constructor() {
+        this.logger = new PopupLogger('PopupInitializer');
+        this.serviceManager = new ServiceManager(this.logger);
+        this.socialLinksManager = new SocialLinksManager(this.logger);
+        this.passwordManager = new PasswordManager(this.logger);
+        this.categoryManager = new CategoryManager(this.logger);
+        this.locationManager = new LocationManager(this.logger);
+        this.resetManager = new ResetManager(
+            this.logger,
+            this.serviceManager,
+            this.socialLinksManager,
+            this.passwordManager
+        );
+        this.eventManager = new EventManager(
+            this.logger,
+            this.serviceManager,
+            this.socialLinksManager,
+            this.passwordManager,
+            this.categoryManager,
+            this.locationManager,
+            this.resetManager
+        );
+    }
+
+    /**
+     * Initialize the popup
+     */
+    async initialize() {
         try {
-            const socialLinks = {};
-            const inputs = document.querySelectorAll('#fieldsContainer input[data-service]');
-
-            // Validate URLs before saving
-            let isValid = true;
-            for (const input of inputs) {
-                const service = input.dataset.service;
-                const value = input.value.trim();
-                if (value) {
-                    if (!/^https?:\/\/.+/.test(value)) {
-                        PopupUtils.showStatus(`Invalid URL format for ${service}. Must start with http:// or https://`, 'error');
-                        input.focus();
-                        isValid = false;
-                        break;
-                    }
-                    socialLinks[service] = value;
-                } else {
-                    delete socialLinks[service];
-                }
-            }
-
-            if (!isValid) {
-                return;
-            }
-
-            const currentData = await chrome.storage.sync.get('socialLinks');
-            const updatedLinks = { ...(currentData.socialLinks || {}), ...socialLinks };
-
-            // Explicitly remove keys for services that now have empty inputs
-            inputs.forEach(input => {
-                if (!input.value.trim()) {
-                    delete updatedLinks[input.dataset.service];
-                }
-            });
-
-            await chrome.storage.sync.set({ socialLinks: updatedLinks });
-            PopupUtils.showStatus('Links saved! Reload pages to apply');
+            this.logger.info(`Initializing Social Filler Pro Popup v${POPUP_CONFIG.VERSION}`);
+            
+            // Load data
+            await this.loadAllData();
+            
+            // Setup event listeners
+            this.eventManager.setupEventListeners();
+            
+            // Load UI
+            await this.loadUI();
+            
+            this.logger.info('Popup initialized successfully');
         } catch (error) {
-            PopupLogger.error('Error saving links:', error);
-            PopupUtils.showStatus('Failed to save links', 'error');
-        }
-    },
-
-    async deleteLink(service) {
-        try {
-            const { socialLinks = {} } = await chrome.storage.sync.get('socialLinks');
-            if (socialLinks[service]) {
-                delete socialLinks[service];
-                await chrome.storage.sync.set({ socialLinks });
-                PopupUtils.showStatus(`Deleted ${service} link`);
-                await this.loadLinks();
-            }
-        } catch (error) {
-            PopupLogger.error('Error deleting link:', error);
-            PopupUtils.showStatus('Failed to delete link', 'error');
+            this.logger.error('Failed to initialize popup:', error);
+            PopupUtils.showStatus('Failed to initialize popup', 'error');
         }
     }
-};
 
-// Password management
-const PasswordManager = {
-    async loadPasswords() {
+    /**
+     * Load all data from storage
+     */
+    async loadAllData() {
         try {
-            const { fillPassword } = await chrome.storage.sync.get('fillPassword');
-            const passwordInput = document.getElementById('passwordValue');
-            if (passwordInput) {
-                passwordInput.value = fillPassword || '';
-            }
+            await Promise.all([
+                this.serviceManager.loadServices(),
+                this.socialLinksManager.loadSocialLinks(),
+                this.passwordManager.loadPassword(),
+                this.categoryManager.loadCategory(),
+                this.locationManager.loadLocation()
+            ]);
+            this.logger.debug('All data loaded successfully');
         } catch (error) {
-            PopupLogger.error('Error loading password:', error);
-            PopupUtils.showStatus('Failed to load password', 'error');
+            this.logger.error('Error loading data:', error);
         }
-    },
+    }
 
-    async savePassword() {
+    /**
+     * Load UI elements
+     */
+    async loadUI() {
         try {
-            const password = document.getElementById('passwordValue').value;
-            if (!password) {
-                PopupUtils.showStatus('Please enter a password', 'error');
-                return;
+            // Load social links UI
+            await this.eventManager.loadSocialLinksUI();
+            
+            // Load password
+            const password = await this.passwordManager.loadPassword();
+            const passwordField = document.getElementById('passwordValue');
+            if (passwordField) {
+                passwordField.value = password;
             }
-
-            await chrome.storage.sync.set({ fillPassword: password });
-            PopupUtils.showStatus('Password saved successfully');
-            this.clearPasswordForm();
+            
+            this.logger.debug('UI loaded successfully');
         } catch (error) {
-            PopupLogger.error('Error saving password:', error);
-            PopupUtils.showStatus('Failed to save password', 'error');
-        }
-    },
-
-    clearPasswordForm() {
-        document.getElementById('passwordValue').value = '';
-    },
-
-    togglePasswordVisibility() {
-        const passwordInput = document.getElementById('passwordValue');
-        const type = passwordInput.type === 'password' ? 'text' : 'password';
-        passwordInput.type = type;
-    }
-};
-
-// Reset functionality
-const ResetManager = {
-    async resetAll() {
-        if (confirm('Are you sure you want to clear ALL saved links AND revert services to default? This cannot be undone.')) {
-            try {
-                // Clear links
-                await chrome.storage.sync.remove('socialLinks');
-
-                // Reset services requires fetching defaults from background
-                await new Promise((resolve, reject) => {
-                    chrome.runtime.sendMessage({ type: "RESET_SERVICES_TO_DEFAULT" }, response => {
-                        if (response?.success) {
-                            resolve();
-                        } else {
-                            reject(new Error("Failed to reset services"));
-                        }
-                    });
-                });
-
-                // Reload UI
-                await PopupInitializer.initializePopup();
-
-                PopupUtils.showStatus('All links cleared and services reset to default');
-            } catch (error) {
-                PopupLogger.error('Error resetting data:', error);
-                PopupUtils.showStatus('Failed to reset data', 'error');
-            }
+            this.logger.error('Error loading UI:', error);
         }
     }
-};
+}
 
-// Event handling
-const EventManager = {
-    setupEventListeners() {
-        // Save button for social links
-        const saveButton = document.getElementById('saveButton');
-        if (saveButton) {
-            saveButton.addEventListener('click', SocialLinksManager.saveLinks);
-        }
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
 
-        // Reset button
-        const resetButton = document.getElementById('resetButton');
-        if (resetButton) {
-            resetButton.addEventListener('click', ResetManager.resetAll);
-        }
-
-        // Add field button
-        const addFieldButton = document.getElementById('addField');
-        if (addFieldButton) {
-            addFieldButton.addEventListener('click', this.addLinkField);
-        }
-
-        // Save service button
-        const saveServiceButton = document.getElementById('saveService');
-        if (saveServiceButton) {
-            saveServiceButton.addEventListener('click', ServiceManager.saveService);
-        }
-
-        // Save password button
-        const savePasswordButton = document.getElementById('savePassword');
-        if (savePasswordButton) {
-            savePasswordButton.addEventListener('click', PasswordManager.savePassword);
-        }
-
-        // Toggle password visibility button
-        const togglePasswordButton = document.getElementById('togglePassword');
-        if (togglePasswordButton) {
-            togglePasswordButton.addEventListener('click', PasswordManager.togglePasswordVisibility);
-        }
-
-        // Event delegation for delete buttons
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-link')) {
-                const service = e.target.dataset.service;
-                if (service) {
-                    SocialLinksManager.deleteLink(service);
-                } else {
-                    e.target.parentElement.remove();
-                }
-            }
-        });
-
-        // Service list event delegation
-        const servicesList = document.getElementById('services-list');
-        if (servicesList) {
-            servicesList.addEventListener('click', async (e) => {
-                const target = e.target;
-                if (target.classList.contains('edit-service')) {
-                    const serviceName = target.dataset.service;
-                    const { services = {} } = await chrome.storage.sync.get('services');
-                    if (services[serviceName]) {
-                        ServiceManager.loadServiceIntoEditor(serviceName, services[serviceName]);
-                    }
-                } else if (target.classList.contains('delete-service')) {
-                    await ServiceManager.deleteService(target.dataset.service);
-                }
-            });
-        }
-
-        // Toggle buttons
-        this.setupToggleButtons();
-    },
-
-    setupToggleButtons() {
-        const toggleButtons = document.querySelectorAll('.toggle-button');
-        toggleButtons.forEach(button => {
-            const targetId = button.getAttribute('data-target');
-            const targetDiv = document.getElementById(targetId);
-
-            if (targetDiv) {
-                button.addEventListener('click', function() {
-                    if (targetDiv.style.display === 'none') {
-                        targetDiv.style.display = 'block';
-                    } else {
-                        targetDiv.style.display = 'none';
-                    }
-
-                    button.style.backgroundColor = 'lightblue';
-                    setTimeout(function() {
-                        button.style.backgroundColor = '';
-                    }, 200);
-                });
-            }
-        });
-    },
-
-    addLinkField() {
-        const selector = document.getElementById('serviceSelector');
-        if (!selector || selector.value === 'custom') {
-            PopupUtils.showStatus('Please select a service first', 'error');
-            return;
-        }
-
-        const service = selector.value;
-        const container = document.getElementById('fieldsContainer');
-        if (!container) return;
-
-        if (document.querySelector(`#fieldsContainer input[data-service="${service}"]`)) {
-            PopupUtils.showStatus('This service already has a field', 'error');
-            return;
-        }
-
-        const inputId = `service-input-${service}`;
-
-        const div = document.createElement('div');
-        div.className = 'field-item';
-        div.innerHTML = `
-            <label for="${inputId}">
-                ${service.charAt(0).toUpperCase() + service.slice(1)}:
-            </label>
-            <input
-                type="url"
-                id="${inputId}"
-                data-service="${service}"
-                placeholder="https://${service}.com/yourprofile"
-                value=""
-            >
-        `;
-
-        container.appendChild(div);
-
-        const input = document.getElementById(inputId);
-        input?.focus();
-    }
-};
-
-// Main popup initializer
-const PopupInitializer = {
-    async initializePopup() {
-        try {
-            // Get services from background script
-            const { services } = await new Promise((resolve, reject) => {
-                chrome.runtime.sendMessage({ type: "GET_SERVICES" }, response => {
-                    if (chrome.runtime.lastError) {
-                        PopupLogger.error("Error getting services:", chrome.runtime.lastError.message);
-                        reject(new Error(`Failed to get services: ${chrome.runtime.lastError.message}`));
-                    } else if (response?.services) {
-                        // Convert stored patterns back to RegExp objects
-                        Object.values(response.services).forEach(config => {
-                            if (config.patterns && Array.isArray(config.patterns)) {
-                                try {
-                                    config.patterns = config.patterns
-                                        .filter(p => p && typeof p.source === 'string')
-                                        .map(p => new RegExp(p.source, p.flags || ''));
-                                } catch (e) {
-                                    PopupLogger.error("Error converting stored pattern to RegExp:", config, e);
-                                    config.patterns = [];
-                                }
-                            } else {
-                                config.patterns = [];
-                            }
-                            if (!config.keywords) config.keywords = [];
-                        });
-                        resolve(response);
-                    } else {
-                        PopupLogger.warn("No services data received from background, resolving with empty.");
-                        resolve({ services: {} });
-                    }
-                });
-            });
-
-            if (!services) {
-                throw new Error("Failed to load services from background.js");
-            }
-
-            const serviceNames = Object.keys(services);
-
-            // Populate service selector dropdown
-            const serviceSelector = document.getElementById('serviceSelector');
-            if (serviceSelector) {
-                const currentSelection = serviceSelector.value;
-                serviceSelector.innerHTML = '<option value="custom">Select a service...</option>';
-                serviceNames.sort().forEach(service => {
-                    const option = document.createElement('option');
-                    option.value = service;
-                    option.textContent = service.charAt(0).toUpperCase() + service.slice(1);
-                    serviceSelector.appendChild(option);
-                });
-                if (serviceNames.includes(currentSelection)) {
-                    serviceSelector.value = currentSelection;
-                }
-            }
-
-            // Load and display services list
-            await ServiceManager.loadServices();
-
-            // Load and display social links using the loaded services map
-            await SocialLinksManager.loadSocialLinks(services);
-
-            // Load saved passwords
-            await PasswordManager.loadPasswords();
-
-        } catch (error) {
-            PopupLogger.error('Initialization error:', error);
-            PopupUtils.showStatus('Failed to initialize extension. Please reload popup.', 'error');
-            const controls = document.querySelectorAll('button, input, select, textarea');
-            controls.forEach(c => c.disabled = true);
-            document.getElementById('status').className = 'status error';
-        }
-    }
-};
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', async () => {
-    await PopupInitializer.initializePopup();
-    EventManager.setupEventListeners();
+// Initialize popup when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.popupInitializer = new PopupInitializer();
+    window.popupInitializer.initialize();
 });
 
-// Export for global access
-window.PopupCore = {
-    PopupLogger,
-    PopupUtils,
-    ServiceManager,
-    SocialLinksManager,
-    PasswordManager,
-    ResetManager,
-    EventManager,
-    PopupInitializer
-};
+// Export for testing purposes
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        PopupInitializer,
+        ServiceManager,
+        SocialLinksManager,
+        PasswordManager,
+        CategoryManager,
+        LocationManager,
+        ResetManager,
+        EventManager,
+        PopupLogger,
+        PopupUtils,
+        POPUP_CONFIG
+    };
+}
