@@ -8,7 +8,10 @@ import { MESSAGE_TYPES } from './constants.js';
 class MessageService {
     constructor() {
         this.handlers = new Map();
+        this.pendingResponses = new Map();
+        this.messageListener = this.handleMessage.bind(this);
         this.setupMessageListener();
+        this.setupCleanupInterval();
     }
 
     /**
@@ -16,10 +19,32 @@ class MessageService {
      * @private
      */
     setupMessageListener() {
-        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-            this.handleMessage(message, sender, sendResponse);
-            return true; // Will respond asynchronously
-        });
+        chrome.runtime.onMessage.addListener(this.messageListener);
+    }
+
+    /**
+     * Set up cleanup interval for pending responses
+     * @private
+     */
+    setupCleanupInterval() {
+        // Clean up pending responses older than 30 seconds
+        setInterval(() => {
+            const now = Date.now();
+            for (const [id, data] of this.pendingResponses) {
+                if (now - data.timestamp > 30000) {
+                    this.pendingResponses.delete(id);
+                }
+            }
+        }, 10000);
+    }
+
+    /**
+     * Clean up resources
+     */
+    destroy() {
+        chrome.runtime.onMessage.removeListener(this.messageListener);
+        this.handlers.clear();
+        this.pendingResponses.clear();
     }
 
     /**

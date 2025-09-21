@@ -35,21 +35,36 @@ class StorageService {
     async get(keys, useSync = true) {
         const storage = useSync ? chrome.storage.sync : chrome.storage.local;
         try {
-            const data = await storage.get(keys);
-            
-            // If requesting synced data, also check pending changes
-            if (useSync) {
-                keys = Array.isArray(keys) ? keys : [keys];
-                keys.forEach(key => {
-                    if (this.pendingSync.has(key)) {
-                        data[key] = this.pendingSync.get(key);
+            // Add retry logic
+            let retries = 3;
+            while (retries > 0) {
+                try {
+                    const data = await storage.get(keys);
+                    
+                    // If requesting synced data, also check pending changes
+                    if (useSync) {
+                        keys = Array.isArray(keys) ? keys : [keys];
+                        keys.forEach(key => {
+                            if (this.pendingSync.has(key)) {
+                                data[key] = this.pendingSync.get(key);
+                            }
+                        });
                     }
-                });
+                    
+                    return data;
+                } catch (e) {
+                    retries--;
+                    if (retries === 0) throw e;
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
             }
-            
-            return data;
         } catch (error) {
             console.error('Storage get error:', error);
+            // Fallback to local storage if sync fails
+            if (useSync) {
+                console.warn('Falling back to local storage');
+                return this.get(keys, false);
+            }
             throw error;
         }
     }

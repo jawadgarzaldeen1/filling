@@ -5,6 +5,9 @@
     "description": "Advanced social media field filler with modern architecture and enhanced features",
     "author": "Social Filler Pro Team",
     "homepage_url": "https://github.com/social-filler-pro/extension",
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'; default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.google.com"
+    },
     
     "options_page": "src/options/options.html",
     
@@ -36,16 +39,7 @@
                 "https://addons.mozilla.org/*",
                 "https://microsoftedge.microsoft.com/addons/*"
             ],
-            "js": [
-                "src/utils/constants.js",
-                "src/utils/messageService.js",
-                "src/utils/utils-parser.js",
-                "src/utils/security-utils.js",
-                "src/content/content-script.js",
-                "src/content/content-core.js",
-                "src/content/content-universal.js"
-            ],
-            "type": "module",
+            "js": ["src/content/content-script.js"],
             "run_at": "document_end",
             "all_frames": false
         }
@@ -78,23 +72,11 @@
     "web_accessible_resources": [
         {
             "resources": [
-                "src/utils/logger.js",
-                "src/utils/storage.js",
-                "src/utils/constants.js",
-                "src/utils/messageService.js",
-                "src/utils/utils-parser.js",
-                "src/utils/security-utils.js",
-                "src/popup/popup-core.js",
-                "src/content/content-script.js",
-                "src/content/content-core.js",
-                "src/content/content-universal.js"
+                "src/utils/*.js",
+                "src/popup/*.js",
+                "src/content/*.js"
             ],
-            "matches": ["<all_urls>"],
-            "use_dynamic_url": true
+            "matches": ["<all_urls>"]
         }
-    ],
-    
-    "content_security_policy": {
-        "extension_pages": "script-src 'self'; object-src 'self';"
-    }
+    ]
 }

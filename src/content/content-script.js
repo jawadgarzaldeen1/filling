@@ -94,6 +94,86 @@ class ContentLogger {
 class FieldDetector {
     constructor(logger) {
         this.logger = logger;
+        this.performanceCache = new PerformanceCacheManager(logger, {
+            maxCacheSize: 50,
+            cacheExpiry: 5000, // 5 seconds
+            enableMetrics: true
+        });
+        this.lastDetectionTime = 0;
+        this.detectionThrottleMs = 100; // Minimum time between detections
+    }
+
+    /**
+     * Sanitize input value
+     * @private
+     */
+    _sanitizeInput(value) {
+        if (typeof value !== 'string') return value;
+        
+        // Remove potentially dangerous characters
+        value = value.replace(/<[^>]*>/g, ''); // Remove HTML tags
+        value = value.replace(/[^\w\s@.-]/g, ''); // Remove special characters except common ones
+        value = value.trim();
+        
+        return value;
+    }
+
+    /**
+     * Validate input value based on field type
+     * @private
+     */
+    _validateInput(value, fieldType) {
+        switch (fieldType) {
+            case 'email':
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+            case 'phone':
+                return /^\+?[\d\s-()]+$/.test(value);
+            case 'url':
+                try {
+                    new URL(value);
+                    return true;
+                } catch {
+                    return false;
+                }
+            default:
+                return true;
+        }
+    }
+
+    /**
+     * Check if enough time has passed since last detection
+     * @private
+     */
+    _canDetect() {
+        const now = Date.now();
+        if (now - this.lastDetectionTime < this.detectionThrottleMs) {
+            return false;
+        }
+        this.lastDetectionTime = now;
+        return true;
+    }
+
+    /**
+     * Get cached field detection results if available
+     * @private
+     */
+    _getCachedResult(selector) {
+        const cached = this.detectionCache.get(selector);
+        if (cached && Date.now() - cached.timestamp < this.cacheDurationMs) {
+            return cached.result;
+        }
+        return null;
+    }
+
+    /**
+     * Cache field detection results
+     * @private
+     */
+    _cacheResult(selector, result) {
+        this.detectionCache.set(selector, {
+            result,
+            timestamp: Date.now()
+        });
     }
 
     /**

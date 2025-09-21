@@ -67,6 +67,10 @@ class Logger {
     constructor(context = 'Background') {
         this.context = context;
         this.logLevel = EXTENSION_CONFIG.LOG_LEVELS.INFO;
+        this.errorCount = 0;
+        this.errorResetInterval = setInterval(() => {
+            this.errorCount = 0;
+        }, 60000); // Reset error count every minute
     }
 
     setLogLevel(level) {
@@ -75,7 +79,7 @@ class Logger {
             : level;
     }
 
-    log(level, message, ...args) {
+    async log(level, message, ...args) {
         const levelNum = typeof level === 'string' 
             ? EXTENSION_CONFIG.LOG_LEVELS[level.toUpperCase()] 
             : level;
@@ -84,21 +88,51 @@ class Logger {
             const timestamp = new Date().toISOString();
             const prefix = `[${timestamp}] [${this.context}]`;
             
-            switch (levelNum) {
-                case EXTENSION_CONFIG.LOG_LEVELS.ERROR:
-                    console.error(prefix, message, ...args);
-                    break;
-                case EXTENSION_CONFIG.LOG_LEVELS.WARN:
-                    console.warn(prefix, message, ...args);
-                    break;
-                case EXTENSION_CONFIG.LOG_LEVELS.INFO:
-                    console.info(prefix, message, ...args);
-                    break;
-                case EXTENSION_CONFIG.LOG_LEVELS.DEBUG:
-                    console.debug(prefix, message, ...args);
-                    break;
+            // Track error frequency
+            if (levelNum === EXTENSION_CONFIG.LOG_LEVELS.ERROR) {
+                this.errorCount++;
+                
+                // If too many errors occur, notify user and reduce logging
+                if (this.errorCount > 10) {
+                    try {
+                        await chrome.notifications.create({
+                            type: 'basic',
+                            iconUrl: '/icons/icon48.svg',
+                            title: 'Social Filler Pro Warning',
+                            message: 'Multiple errors detected. Check console for details.'
+                        });
+                        return; // Skip logging to prevent console spam
+                    } catch (e) {
+                        // Fallback if notifications fail
+                        console.error(prefix, 'Failed to show notification:', e);
+                    }
+                }
+            }
+            
+            try {
+                switch (levelNum) {
+                    case EXTENSION_CONFIG.LOG_LEVELS.ERROR:
+                        console.error(prefix, message, ...args);
+                        break;
+                    case EXTENSION_CONFIG.LOG_LEVELS.WARN:
+                        console.warn(prefix, message, ...args);
+                        break;
+                    case EXTENSION_CONFIG.LOG_LEVELS.INFO:
+                        console.info(prefix, message, ...args);
+                        break;
+                    case EXTENSION_CONFIG.LOG_LEVELS.DEBUG:
+                        console.debug(prefix, message, ...args);
+                        break;
+                }
+            } catch (e) {
+                // Fallback logging if console methods fail
+                console.log(prefix, `[${level}]`, message, ...args);
             }
         }
+    }
+
+    destroy() {
+        clearInterval(this.errorResetInterval);
     }
 
     error(message, ...args) { this.log(EXTENSION_CONFIG.LOG_LEVELS.ERROR, message, ...args); }

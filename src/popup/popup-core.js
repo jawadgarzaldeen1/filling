@@ -1328,6 +1328,7 @@ class EventManager {
 
 class PopupInitializer {
     constructor() {
+        this.setupSettingsButton = this.setupSettingsButton.bind(this);
         this.logger = new PopupLogger('PopupInitializer');
         this.serviceManager = new ServiceManager(this.logger);
         this.socialLinksManager = new SocialLinksManager(this.logger);
@@ -1361,6 +1362,7 @@ class PopupInitializer {
 
     async initialize() {
         try {
+            this.setupSettingsButton();
             this.logger.info(`Initializing Social Filler Pro Popup v${POPUP_CONFIG.VERSION}`);
             await this.loadAllData();
             this.eventManager.setupEventListeners();
@@ -2218,25 +2220,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ESM EXPORTS
 // ============================================================================
 
-export {
-    // Core
-    POPUP_CONFIG,
-    PopupLogger,
-    PopupUtils,
-    // Managers
-    ServiceManager,
-    SocialLinksManager,
-    PasswordManager,
-    CategoryManager,
-    LocationManager,
-    ResetManager,
-    EventManager,
-    // Initializer & UI wrapper
-    PopupInitializer,
-    PopupManager,
-    // Universal
-    UniversalFormManager,
-    GoogleSheetsParser,
-    GoogleSheetsImporter,
-    IntegrationHelper
-};
+export { PopupInitializer };
+export { POPUP_CONFIG };
