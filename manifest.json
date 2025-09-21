@@ -6,63 +6,10 @@
     "author": "Social Filler Pro Team",
     "homepage_url": "https://github.com/social-filler-pro/extension",
     
-    "background": {
-        "service_worker": "background.js",
-        "type": "module"
-    },
-    
-    "content_scripts": [
-        {
-            "matches": ["<all_urls>"],
-            "exclude_matches": [
-                "https://asana.com/*",
-                "http://asana.com/*",
-                "https://*.asana.com/*",
-                "http://*.asana.com/*",
-                "https://suite.ewscrm.com/*",
-                "http://suite.ewscrm.com/*",
-                "https://*.suite.ewscrm.com/*",
-                "http://*.suite.ewscrm.com/*",
-                "https://www.photopea.com/*",
-                "https://chrome.google.com/webstore/*",
-                "https://addons.mozilla.org/*",
-                "https://microsoftedge.microsoft.com/addons/*"
-            ],
-            "js": [
-                "utils-parser.js",
-                "field-detector-optimized.js",
-                "content-core.js",
-                "content-universal.js",
-                "content-radio.js"
-            ],
-            "run_at": "document_end",
-            "all_frames": false
-        },
-        {
-            "matches": [
-                "https://www.allstatesusadirectory.com/submit.php",
-                "https://www.hitwebdirectory.com/submit.php"
-            ],
-            "js": ["inject-category-filter.js"],
-            "run_at": "document_idle",
-            "all_frames": false
-        }
-    ],
-    
-    "permissions": [
-        "storage",
-        "activeTab",
-        "tabs",
-        "scripting"
-    ],
-    
-    "host_permissions": [
-        "<all_urls>"
-    ],
+    "options_page": "src/options/options.html",
     
     "action": {
-        "default_popup": "popup.html",
-        "default_title": "Social Filler Pro",
+        "default_popup": "src/popup/popup.html",
         "default_icon": {
             "16": "icons/icon16.svg",
             "32": "icons/icon32.svg",
@@ -71,7 +18,55 @@
         }
     },
     
-    "options_page": "settings.html",
+
+    
+    "background": {
+        "service_worker": "src/background/background.js",
+        "type": "module"
+    },
+    
+    "content_scripts": [
+        {
+            "matches": ["http://*/*", "https://*/*"],
+            "exclude_matches": [
+                "*://*.asana.com/*",
+                "*://*.ewscrm.com/*",
+                "*://*.photopea.com/*",
+                "https://chrome.google.com/webstore/*",
+                "https://addons.mozilla.org/*",
+                "https://microsoftedge.microsoft.com/addons/*"
+            ],
+            "js": [
+                "src/utils/constants.js",
+                "src/utils/messageService.js",
+                "src/utils/utils-parser.js",
+                "src/utils/security-utils.js",
+                "src/content/content-script.js",
+                "src/content/content-core.js",
+                "src/content/content-universal.js"
+            ],
+            "type": "module",
+            "run_at": "document_end",
+            "all_frames": false
+        }
+    ],
+    
+    "permissions": [
+        "storage",
+        "activeTab"
+    ],
+    
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+    ],
+    
+
+    
+    "options_ui": {
+        "page": "src/options/options.html",
+        "open_in_tab": true
+    },
     
     "icons": {
         "16": "icons/icon16.svg",
@@ -83,13 +78,19 @@
     "web_accessible_resources": [
         {
             "resources": [
-                "utils-parser.js",
-                "field-detector-optimized.js",
-                "enhanced-sheets-parser.js",
-                "description-auto-filler.js",
-                "duplicate-prevention.js"
+                "src/utils/logger.js",
+                "src/utils/storage.js",
+                "src/utils/constants.js",
+                "src/utils/messageService.js",
+                "src/utils/utils-parser.js",
+                "src/utils/security-utils.js",
+                "src/popup/popup-core.js",
+                "src/content/content-script.js",
+                "src/content/content-core.js",
+                "src/content/content-universal.js"
             ],
-            "matches": ["<all_urls>"]
+            "matches": ["<all_urls>"],
+            "use_dynamic_url": true
         }
     ],
     

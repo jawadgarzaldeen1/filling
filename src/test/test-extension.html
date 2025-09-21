@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Filler Pro - Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .form-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .social-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background-color: #e8f5e8;
+            border: 1px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Social Filler Pro - Test Page</h1>
+    <p>This page is designed to test the Social Filler Pro Chrome extension. Fill in some data in the popup and see if it auto-fills these forms!</p>
+    <p><strong>Extension Status:</strong> <span id="extensionStatus">Checking...</span></p>
+
+    <div class="status">
+        <strong>Extension Status:</strong> <span id="extensionStatus">Checking...</span>
+    </div>
+
+    <!-- Social Media Links Section -->
+    <div class="form-section">
+        <h2>📱 Social Media Links</h2>
+        <div class="social-links">
+            <div class="form-group">
+                <label for="facebook">Facebook URL:</label>
+                <input type="url" id="facebook" name="facebook" placeholder="https://facebook.com/yourpage">
+            </div>
+            <div class="form-group">
+                <label for="instagram">Instagram URL:</label>
+                <input type="url" id="instagram" name="instagram" placeholder="https://instagram.com/yourpage">
+            </div>
+            <div class="form-group">
+                <label for="twitter">Twitter URL:</label>
+                <input type="url" id="twitter" name="twitter" placeholder="https://twitter.com/yourpage">
+            </div>
+            <div class="form-group">
+                <label for="youtube">YouTube URL:</label>
+                <input type="url" id="youtube" name="youtube" placeholder="https://youtube.com/yourchannel">
+            </div>
+            <div class="form-group">
+                <label for="linkedin">LinkedIn URL:</label>
+                <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/yourprofile">
+            </div>
+            <div class="form-group">
+                <label for="website">Website URL:</label>
+                <input type="url" id="website" name="website" placeholder="https://yourwebsite.com">
+            </div>
+        </div>
+    </div>
+
+    <!-- Universal Form Data Section -->
+    <div class="form-section">
+        <h2>📋 Universal Form Data</h2>
+        <div class="form-group">
+            <label for="businessName">Business Name:</label>
+            <input type="text" id="businessName" name="businessName" placeholder="Enter your business name">
+        </div>
+        <div class="form-group">
+            <label for="company">Company:</label>
+            <input type="text" id="company" name="company" placeholder="Enter your company name">
+        </div>
+        <div class="form-group">
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email">
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
+        </div>
+        <div class="form-group">
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" placeholder="Enter your address">
+        </div>
+        <div class="form-group">
+            <label for="city">City:</label>
+            <input type="text" id="city" name="city" placeholder="Enter your city">
+        </div>
+        <div class="form-group">
+            <label for="state">State:</label>
+            <input type="text" id="state" name="state" placeholder="Enter your state">
+        </div>
+        <div class="form-group">
+            <label for="zip">ZIP Code:</label>
+            <input type="text" id="zip" name="zip" placeholder="Enter your ZIP code">
+        </div>
+        <div class="form-group">
+            <label for="location">Location (Simplified):</label>
+            <input type="text" id="location" name="location" placeholder="Enter location (city, state, country)">
+        </div>
+        <div class="form-group">
+            <label for="keywords">Keywords:</label>
+            <input type="text" id="keywords" name="keywords" placeholder="Enter keywords (comma-separated)">
+        </div>
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" placeholder="Enter your business description" rows="3"></textarea>
+        </div>
+    </div>
+
+    <!-- Password Section -->
+    <div class="form-section">
+        <h2>🔐 Password Fields</h2>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Enter password">
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password">
+        </div>
+    </div>
+
+    <!-- Category Selection Section -->
+    <div class="form-section">
+        <h2>📂 Category Selection</h2>
+        <div class="form-group">
+            <label for="category">Select Category:</label>
+            <select id="category" name="category">
+                <option value="">Select a category...</option>
+                <option value="household-domestic-help">Household - Domestic Help</option>
+                <option value="computer">Computer</option>
+                <option value="health-beauty-fitness">Health Beauty Fitness</option>
+                <option value="legal-services">Legal Services</option>
+                <option value="real-estate-services">Real Estate Services</option>
+                <option value="travel-services">Travel Services</option>
+                <option value="financial-services">Financial Services</option>
+                <option value="event-services">Event Services</option>
+                <option value="repair">Repair</option>
+                <option value="writing-editing-translating">Writing - Editing - Translating</option>
+                <option value="other-services">Other Services</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Location Section -->
+    <div class="form-section">
+        <h2>📍 Location Information</h2>
+        <div class="form-group">
+            <label for="country">Country:</label>
+            <select id="country" name="country">
+                <option value="">Select country...</option>
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="UK">United Kingdom</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="IT">Italy</option>
+                <option value="ES">Spain</option>
+                <option value="IN">India</option>
+                <option value="MX">Mexico</option>
+                <option value="BR">Brazil</option>
+                <option value="JP">Japan</option>
+                <option value="CN">China</option>
+                <option value="SG">Singapore</option>
+                <option value="NZ">New Zealand</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="region">State/Region:</label>
+            <input type="text" id="region" name="region" placeholder="Enter your state or region">
+        </div>
+        <div class="form-group">
+            <label for="cityLocation">City:</label>
+            <input type="text" id="cityLocation" name="cityLocation" placeholder="Enter your city">
+        </div>
+    </div>
+
+    <!-- Radio Button Section -->
+    <div class="form-section">
+        <h2>📻 Radio Button Tests</h2>
+        <div class="form-group">
+            <label>Do you agree to the terms?</label>
+            <div>
+                <input type="radio" id="agree-yes" name="agree" value="yes">
+                <label for="agree-yes">Yes, I agree</label>
+            </div>
+            <div>
+                <input type="radio" id="agree-no" name="agree" value="no">
+                <label for="agree-no">No, I don't agree</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Newsletter subscription:</label>
+            <div>
+                <input type="radio" id="newsletter-yes" name="newsletter" value="yes">
+                <label for="newsletter-yes">Yes, subscribe me</label>
+            </div>
+            <div>
+                <input type="radio" id="newsletter-no" name="newsletter" value="no">
+                <label for="newsletter-no">No, don't subscribe</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h2>📊 Test Results</h2>
+        <p>Fill in some data using the extension popup, then check if the fields above get auto-filled!</p>
+        <button onclick="checkFilledFields()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Check Filled Fields
+        </button>
+        <div id="testResults" style="margin-top: 15px;"></div>
+    </div>
+
+    <script>
+        // Check if extension is loaded
+        function checkExtensionStatus() {
+            const statusElement = document.getElementById('extensionStatus');
+            if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) {
+                statusElement.textContent = '✅ Extension detected and active';
+                statusElement.style.color = '#4CAF50';
+            } else {
+                statusElement.textContent = '❌ Extension not detected';
+                statusElement.style.color = '#f44336';
+            }
+        }
+
+        // Check which fields have been filled
+        function checkFilledFields() {
+            const resultsDiv = document.getElementById('testResults');
+            const allInputs = document.querySelectorAll('input, textarea, select');
+            let filledCount = 0;
+            let filledFields = [];
+
+            allInputs.forEach(input => {
+                if (input.value && input.value.trim() !== '') {
+                    filledCount++;
+                    filledFields.push({
+                        name: input.name || input.id,
+                        value: input.value,
+                        type: input.type || input.tagName.toLowerCase()
+                    });
+                }
+            });
+
+            let html = `<h3>Test Results:</h3>`;
+            html += `<p><strong>Filled Fields:</strong> ${filledCount} out of ${allInputs.length}</p>`;
+            
+            if (filledFields.length > 0) {
+                html += `<h4>Filled Fields Details:</h4><ul>`;
+                filledFields.forEach(field => {
+                    html += `<li><strong>${field.name}</strong> (${field.type}): "${field.value}"</li>`;
+                });
+                html += `</ul>`;
+            } else {
+                html += `<p>No fields were filled. Try using the extension popup to fill some data first!</p>`;
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            checkExtensionStatus();
+            
+            // Check for extension messages
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+                    console.log('Extension message received:', message);
+                    if (message.type === 'SERVICES_UPDATED' || message.type === 'UNIVERSAL_FORM_DATA_UPDATED') {
+                        setTimeout(checkFilledFields, 1000);
+                    }
+                });
+            }
+        });
+
+        // Auto-check every 5 seconds
+        setInterval(checkFilledFields, 5000);
+
+        // Radio button event listener fix
+        let internalUpdate = false;
+        
+        function enforceChoice() {
+            console.log('Enforce choice function called');
+            // Add your custom logic here
+        }
+
+        document.addEventListener('change', (e) => {
+            if (internalUpdate) return;
+            const target = e.target;
+            if (target.matches?.('input[type="radio"][name="productType"]') && target.value !== '001') {
+                enforceChoice();
+            }
+        }, true);
+
+        // Test radio button functionality
+        function testRadioButtons() {
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            console.log(`Found ${radioButtons.length} radio buttons`);
+            radioButtons.forEach((radio, index) => {
+                console.log(`Radio ${index + 1}: name="${radio.name}", value="${radio.value}"`);
+            });
+        }
+
+        // Call test function on load
+        document.addEventListener('DOMContentLoaded', testRadioButtons);
+    </script>
+</body>
+</html>

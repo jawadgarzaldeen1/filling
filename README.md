@@ -1,4 +1,4 @@
-# Social Filler Pro Extension v7.0
+# Social Filler Pro Extension v7.0 - Cleaned & Optimized
 
 ## 🚀 Quick Start
 
@@ -13,7 +13,7 @@
    - Configure your social media links and settings
    - Test auto-filling on the test page
 
-## 📁 File Structure
+## 📁 Cleaned File Structure
 
 ### Core Files
 - `manifest.json` - Extension configuration
@@ -22,23 +22,23 @@
 - `popup-core.js` - Popup functionality
 - `popup-universal.js` - Universal form management
 
-### Content Scripts
-- `content-core.js` - Main content script
-- `content-universal.js` - Universal form filling
-- `content-radio.js` - Radio button handling
+### Content Scripts (Consolidated)
+- `content-script.js` - **Single consolidated content script** with all functionality:
+  - Field detection and filling
+  - Universal form filling
+  - Social media filling
+  - Password filling
+  - Category auto-selection
+  - Location auto-filling
 
-### Utilities
-- `utils-parser.js` - Text parsing utilities
-- `field-detector-optimized.js` - Advanced field detection
-- `enhanced-sheets-parser.js` - Google Sheets import
-- `description-auto-filler.js` - Auto-description generation
-- `duplicate-prevention.js` - Duplicate detection
-
-### Additional Files
+### Settings & Utilities
 - `settings.html` - Settings page
 - `settings.js` - Settings functionality
-- `inject-category-filter.js` - Category filtering
+- `inject-category-filter.js` - Category filtering for specific sites
 - `test-extension.html` - Test page
+
+### Assets
+- `icons/` - Extension icons
 
 ## 🎯 Features
 
@@ -48,56 +48,59 @@
 - ✅ **Location Auto-Fill** - Fills location fields (country, state, city, address)
 - ✅ **Password Filling** - Fills password fields
 - ✅ **Google Sheets Import** - Import data from Google Sheets
-- ✅ **Description Auto-Generation** - Auto-generates descriptions
-- ✅ **Duplicate Prevention** - Prevents duplicate entries
 - ✅ **Settings Management** - Comprehensive settings page
 
-## 🔧 Troubleshooting
+## 🔧 What Was Cleaned Up
 
-If the extension is not working:
+### Removed Duplicate Files:
+- ❌ `enhanced-sheets-parser.js` (duplicate parser)
+- ❌ `sheets-parser-optimized.js` (duplicate parser)
+- ❌ `description-auto-filler.js` (unnecessary)
+- ❌ `duplicate-prevention.js` (unnecessary)
+- ❌ `content-core.js` (consolidated)
+- ❌ `content-universal.js` (consolidated)
+- ❌ `content-radio.js` (consolidated)
+- ❌ `field-detector-optimized.js` (consolidated)
+- ❌ `utils-parser.js` (consolidated)
 
-1. **Check Console Errors:**
-   - Open Developer Tools (F12)
-   - Check Console tab for errors
-   - Check Extension popup for errors
+### Fixed Issues:
+- ✅ **Consolidated Content Scripts** - All content script functionality now in one file
+- ✅ **Fixed CONTENT_CONFIG** - Removed undefined references
+- ✅ **Cleaned Google Sheets Parser** - Removed duplicate parsers
+- ✅ **Fixed Settings Integration** - Proper communication between settings and main code
+- ✅ **Removed Failed Methods** - Eliminated non-working functionality
+- ✅ **Simplified Architecture** - Cleaner, more maintainable code structure
 
-2. **Reload Extension:**
-   - Go to `chrome://extensions/`
-   - Click the reload button on the extension
+## 🛠️ How to Use
 
-3. **Check Permissions:**
-   - Make sure the extension has necessary permissions
-   - Check if the website is in the exclusion list
+1. **Configure Data:**
+   - Click the extension icon
+   - Fill in your business information
+   - Add social media links
+   - Set up categories and location
 
-4. **Test on Test Page:**
-   - Open `test-extension.html`
-   - Check if content scripts are loaded
-   - Test auto-filling functionality
+2. **Import from Google Sheets:**
+   - Use the Google Sheets import feature in the popup
+   - Paste your data and let the parser extract the information
 
-## 📝 Version History
+3. **Auto-Fill Forms:**
+   - Navigate to any website with forms
+   - The extension will automatically detect and fill relevant fields
+   - Use the popup to manually trigger specific filling operations
 
-- **v7.0** - Complete rebuild with modern JavaScript best practices
-- **v6.0** - Enhanced features and optimizations
-- **v5.0** - Added category and location auto-selection
-- **v4.0** - Added Google Sheets import
-- **v3.0** - Added universal form filling
-- **v2.0** - Added password filling
-- **v1.0** - Basic social media filling
+## 🔍 Testing
 
-## 🛠️ Development
+The `test-extension.html` file provides a comprehensive test environment with:
+- Universal form fields (name, email, phone, etc.)
+- Social media fields
+- Category selects
+- Location fields
+- Password fields
 
-The extension is built with:
-- **Manifest V3** - Latest Chrome extension standard
-- **ES6+ Classes** - Modern JavaScript architecture
-- **Modular Design** - Clean separation of concerns
-- **Error Handling** - Comprehensive error management
-- **Performance Optimization** - Caching and efficient algorithms
+## 📝 Notes
 
-## 📞 Support
-
-For issues or questions:
-1. Check the console for error messages
-2. Test on the provided test page
-3. Verify extension permissions
-4. Reload the extension if needed
-
+- The extension now uses a single, consolidated content script for better performance
+- All duplicate code has been removed
+- Settings page properly communicates with the main extension
+- Google Sheets parser is simplified and more reliable
+- The codebase is now much cleaner and easier to maintain

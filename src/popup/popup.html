@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Social Filler Pro</title>
+  <link rel="stylesheet" href="popup.css">
+  <style>
+    /* Tabs */
+    .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
+    .tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; background: #f4f4f4; border: none; }
+    .tab.active { background: #fff; font-weight: bold; border-bottom: 2px solid #007bff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .password-wrapper { display: flex; gap: 4px; }
+    .button-group { display: flex; gap: 6px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>⚡ Social Filler Pro</h2>
+
+  <!-- Tab navigation -->
+  <div class="tabs">
+    <button class="tab active" data-tab="general">General</button>
+    <button class="tab" data-tab="social">Social</button>
+    <button class="tab" data-tab="universal">Universal</button>
+    <button class="tab" data-tab="import">Import</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </div>
+
+  <!-- General -->
+  <div class="tab-content active" id="tab-general">
+    <h3>General Info</h3>
+    <div class="form-group">
+      <label for="categoryValue">Category</label>
+      <input type="text" id="categoryValue" placeholder="Enter category">
+      <button id="saveCategory">Save Category</button>
+    </div>
+
+    <div class="form-group">
+      <label for="countryValue">Country</label>
+      <input type="text" id="countryValue">
+    </div>
+    <div class="form-group">
+      <label for="regionValue">Region</label>
+      <input type="text" id="regionValue">
+    </div>
+    <div class="form-group">
+      <label for="cityValue">City</label>
+      <input type="text" id="cityValue">
+    </div>
+    <div class="form-group">
+      <label for="addressValue">Address</label>
+      <input type="text" id="addressValue">
+      <button id="saveLocation">Save Location</button>
+    </div>
+
+    <div class="form-group">
+      <label for="passwordValue">Password</label>
+      <div class="password-wrapper">
+        <input type="password" id="passwordValue" placeholder="Enter password">
+        <button id="togglePassword">👁️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Social -->
+  <div class="tab-content" id="tab-social">
+    <h3>Social Links</h3>
+    <div id="fieldsContainer"></div>
+  </div>
+
+  <!-- Universal -->
+  <div class="tab-content" id="tab-universal">
+    <h3>Universal Form</h3>
+    <div class="form-group"><input type="text" id="universal-title" placeholder="Business Title"></div>
+    <div class="form-group"><input type="text" id="universal-company" placeholder="Company"></div>
+    <div class="form-group"><input type="email" id="universal-email" placeholder="Email"></div>
+    <div class="form-group"><input type="tel" id="universal-phone" placeholder="Phone"></div>
+    <div class="form-group"><input type="text" id="universal-address" placeholder="Address"></div>
+    <div class="form-group"><input type="text" id="universal-city" placeholder="City"></div>
+    <div class="form-group"><input type="text" id="universal-state" placeholder="State"></div>
+    <div class="form-group"><input type="text" id="universal-zipcode" placeholder="Zip Code"></div>
+    <div class="form-group"><input type="url" id="universal-website" placeholder="Website"></div>
+    <div class="form-group"><textarea id="universal-description" rows="3" placeholder="Description"></textarea></div>
+    <div class="form-group"><input type="text" id="universal-keywords" placeholder="Keywords (comma separated)"></div>
+    <button id="saveUniversalData">Save Universal Data</button>
+  </div>
+
+  <!-- Import -->
+  <div class="tab-content" id="tab-import">
+    <h3>Google Sheets Import</h3>
+    <textarea id="sheetsImportData" rows="4" placeholder="Paste Google Sheets data here"></textarea>
+    <div class="button-group">
+      <button id="importSheetsData">📥 Import & Fill</button>
+      <button id="clearImportData">🧹 Clear</button>
+    </div>
+    <div id="importStatus" class="import-status"></div>
+    <div id="aiExtractionResults"></div>
+  </div>
+
+  <!-- Settings -->
+  <div class="tab-content" id="tab-settings">
+    <h3>Settings</h3>
+    <div class="button-group">
+      <button id="saveButton">💾 Save All</button>
+      <button id="resetButton">🔄 Reset</button>
+      <button id="settingsButton">⚙️ Advanced</button>
+    </div>
+  </div>
+
+  <script type="module" src="popup-loader.js"></script>
+  <script type="module" src="popup-tabs.js"></script>
+</body>
+</html>

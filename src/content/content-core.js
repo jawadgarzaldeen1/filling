@@ -497,10 +497,21 @@ class LocationAutoFiller {
      */
     async fillLocationFields() {
         try {
-            // Get saved location from storage
-            const result = await chrome.storage.sync.get('selectedLocation');
-            const savedLocation = result.selectedLocation;
-            
+            // Prefer centralized LocationManager when available
+            let savedLocation = null;
+            try {
+                if (window.LocationManager && typeof window.LocationManager.updateLocation === 'function') {
+                    savedLocation = await window.LocationManager.updateLocation();
+                } else {
+                    const result = await chrome.storage.sync.get('selectedLocation');
+                    savedLocation = result.selectedLocation;
+                }
+            } catch (e) {
+                this.logger.warn('Error obtaining centralized location, falling back to storage:', e);
+                const result = await chrome.storage.sync.get('selectedLocation');
+                savedLocation = result.selectedLocation;
+            }
+
             if (!savedLocation) {
                 this.logger.debug('No saved location found for auto-fill');
                 return 0;

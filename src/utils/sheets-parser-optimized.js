@@ -49,7 +49,7 @@ const OptimizedSheetsParser = {
     cache: new Map(),
     
     // Main parsing function with performance optimization
-    parseGoogleSheetsData(rawData) {
+    async parseGoogleSheetsData(rawData) {
         if (!rawData || typeof rawData !== 'string') {
             console.warn('[PARSER] Invalid input data');
             return this.getEmptyResult();
@@ -63,16 +63,31 @@ const OptimizedSheetsParser = {
         }
         
         const startTime = performance.now();
-        
+
+        // Try LLM-based extraction first if configured. This gives better
+        // structured extraction for free-text rows like "Contact John Doe at ACME Inc in New York".
+        try {
+            const llmResult = await this.tryLLMExtraction(rawData);
+            if (llmResult) {
+                const duration = performance.now() - startTime;
+                if (this.cache.size < 10) this.cache.set(cacheKey, llmResult);
+                console.log(`[PARSER] LLM parsed data in ${duration.toFixed(2)}ms`);
+                return llmResult;
+            }
+        } catch (llmError) {
+            // Non-fatal: if LLM fails, fall back to local parser
+            console.warn('[PARSER] LLM extraction failed, falling back to local parser:', llmError);
+        }
+
         try {
             const result = this.performParsing(rawData);
             const duration = performance.now() - startTime;
-            
+
             // Cache the result (with size limit)
             if (this.cache.size < 10) { // Limit cache to 10 entries
                 this.cache.set(cacheKey, result);
             }
-            
+
             console.log(`[PARSER] Parsed data in ${duration.toFixed(2)}ms, found:`, {
                 universalFields: Object.keys(result.universalFormData).length,
                 socialLinks: Object.keys(result.socialLinks).length,
@@ -82,6 +97,92 @@ const OptimizedSheetsParser = {
         } catch (error) {
             console.error('[PARSER] Error parsing data:', error);
             return this.getEmptyResult();
+        }
+    },
+
+    // Try LLM-based extraction. Returns parsed result or null if not available.
+    async tryLLMExtraction(rawData) {
+        // Read API key from stored settings (non-blocking retrieval)
+        let settings = {};
+        try {
+            const store = await chrome.storage.sync.get('settings');
+            settings = store.settings || {};
+        } catch (e) {
+            // ignore storage errors and fall back
+            console.warn('[PARSER] Could not read settings for LLM key:', e);
+        }
+
+        const apiKey = settings.apiKey || settings.llmApiKey || null;
+        const llmEndpoint = settings.llmEndpoint || 'https://api.openai.com/v1/chat/completions';
+
+        if (!apiKey) return null; // no key configured
+
+        // Build a short prompt that instructs the LLM to return strict JSON
+        const prompt = `Extract structured contact/business data as JSON from the following text. ` +
+                       `Return only valid JSON with keys name, company, address, city, state, zip, phone, email when present. ` +
+                       `If a field is not present, omit it. Text:\n\n"""${rawData.replace(/"/g, '\\"')}"""`;
+
+        try {
+            const response = await fetch(llmEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [{ role: 'user', content: prompt }],
+                    max_tokens: 400,
+                    temperature: 0
+                })
+            });
+
+            if (!response.ok) {
+                const text = await response.text().catch(() => '');
+                throw new Error(`LLM API error: ${response.status} ${response.statusText} ${text}`);
+            }
+
+            const json = await response.json();
+
+            // Attempt to extract JSON from response. Support both chat/completions style.
+            const content = (json.choices && json.choices[0] && (json.choices[0].message?.content || json.choices[0].text)) || json.output || '';
+
+            // Find JSON substring
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) return null;
+
+            let parsed = null;
+            try {
+                parsed = JSON.parse(jsonMatch[0]);
+            } catch (e) {
+                console.warn('[PARSER] LLM returned invalid JSON:', e);
+                return null;
+            }
+
+            // Map LLM output into parser result shape
+            const result = this.getEmptyResult();
+            const map = {
+                name: ['name'],
+                company: ['company', 'title'],
+                address: ['address'],
+                city: ['city'],
+                state: ['state'],
+                zip: ['zipcode', 'zip'],
+                phone: ['phone'],
+                email: ['email']
+            };
+
+            Object.entries(map).forEach(([src, targets]) => {
+                if (parsed[src]) {
+                    targets.forEach(t => result.universalFormData[t] = parsed[src]);
+                }
+            });
+
+            // Return structured result
+            return result;
+        } catch (error) {
+            console.warn('[PARSER] LLM extraction error:', error);
+            return null;
         }
     },
     
@@ -304,12 +405,12 @@ const OptimizedSheetsParser = {
     },
     
     // Batch processing for multiple sheets
-    parseMultipleSheets(sheetsData) {
+    async parseMultipleSheets(sheetsData) {
         const results = [];
         
         for (const [index, data] of sheetsData.entries()) {
             try {
-                const result = this.parseGoogleSheetsData(data);
+                const result = await this.parseGoogleSheetsData(data);
                 results.push({
                     index,
                     success: true,
